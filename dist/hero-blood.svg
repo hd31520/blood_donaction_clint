@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="title desc">
+  <title id="title">Blood Donation Illustration</title>
+  <desc id="desc">Illustration of blood donation card and droplets</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f6fbf4"/>
+      <stop offset="100%" stop-color="#e2efde"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d94a4a"/>
+      <stop offset="100%" stop-color="#b93131"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="560" rx="28" fill="url(#bg)"/>
+  <g transform="translate(70 80)">
+    <rect x="0" y="0" width="430" height="300" rx="20" fill="#ffffff" stroke="#d8e1d3"/>
+    <rect x="28" y="36" width="160" height="18" rx="9" fill="#e8efe4"/>
+    <rect x="28" y="70" width="300" height="14" rx="7" fill="#edf3ea"/>
+    <rect x="28" y="96" width="250" height="14" rx="7" fill="#edf3ea"/>
+    <rect x="28" y="152" width="374" height="96" rx="14" fill="#f8fbf6" stroke="#e2eadc"/>
+    <circle cx="88" cy="201" r="22" fill="#dcead7"/>
+    <rect x="130" y="186" width="200" height="12" rx="6" fill="#e8efe4"/>
+    <rect x="130" y="208" width="150" height="12" rx="6" fill="#eef3eb"/>
+  </g>
+  <path d="M595 144c0-33 27-60 60-60s60 27 60 60c0 46-60 127-60 127s-60-81-60-127z" fill="url(#drop)"/>
+  <path d="M524 290c0-24 19-43 43-43s43 19 43 43c0 33-43 89-43 89s-43-56-43-89z" fill="#cf3f3f"/>
+  <circle cx="656" cy="142" r="22" fill="#fbe6e6"/>
+</svg>

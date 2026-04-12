@@ -1,0 +1,1 @@
+import{r as e,j as t}from"./index-C7bmGRFL.js";const c=({title:s,value:a,subtitle:r})=>t.jsxs("article",{className:"stat-card",children:[t.jsx("p",{className:"stat-card-title",children:s}),t.jsx("h3",{children:a}),t.jsx("p",{className:"stat-card-subtitle",children:r})]}),n=e.memo(c);export{n as S};

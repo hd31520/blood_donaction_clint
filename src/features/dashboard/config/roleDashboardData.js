@@ -1,0 +1,142 @@
+export const roleDashboardData = {
+  super_admin: {
+    label: 'Super Admin',
+    scope: 'National data access across all districts',
+    summaries: [
+      { title: 'Total Donors', value: '18,420', subtitle: '+4.8% vs last month' },
+      { title: 'Active This Month', value: '10,950', subtitle: '59.5% activity rate' },
+      { title: 'Emergency Fulfillment', value: '92%', subtitle: 'Requests matched under 20 mins' },
+    ],
+    controls: [
+      'Create district admins',
+      'Publish national donation campaigns',
+      'Export all monthly reports',
+      'Review high-risk shortage zones',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 620 },
+      { label: 'Feb', value: 710 },
+      { label: 'Mar', value: 780 },
+      { label: 'Apr', value: 860 },
+      { label: 'May', value: 910 },
+      { label: 'Jun', value: 970 },
+    ],
+    accessSummary: [
+      'Can access and edit every donor profile',
+      'Can view every district, upazila, and union report',
+      'Can manage all admin roles',
+    ],
+  },
+  district_admin: {
+    label: 'District Admin',
+    scope: 'District-level access and controls',
+    summaries: [
+      { title: 'District Donors', value: '3,950', subtitle: 'Dhaka district' },
+      { title: 'Active Donors', value: '2,130', subtitle: '53.9% district activity' },
+      { title: 'Pending Cases', value: '24', subtitle: 'Awaiting donor match' },
+    ],
+    controls: [
+      'Create upazila admins',
+      'Approve union-level campaigns',
+      'Track district shortages',
+      'Export district monthly report',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 140 },
+      { label: 'Feb', value: 165 },
+      { label: 'Mar', value: 178 },
+      { label: 'Apr', value: 190 },
+      { label: 'May', value: 204 },
+      { label: 'Jun', value: 225 },
+    ],
+    accessSummary: [
+      'Can only access donors inside own district',
+      'Can manage upazila admins under own district',
+      'Can export district-scoped analytics',
+    ],
+  },
+  upazila_admin: {
+    label: 'Upazila Admin',
+    scope: 'Upazila-level access and controls',
+    summaries: [
+      { title: 'Upazila Donors', value: '1,260', subtitle: 'Current upazila directory' },
+      { title: 'Available Now', value: '690', subtitle: 'Ready donors this week' },
+      { title: 'Inactive Donors', value: '160', subtitle: 'Need reactivation call' },
+    ],
+    controls: [
+      'Create union leaders',
+      'Monitor local donor availability',
+      'Assign emergency response volunteers',
+      'Export upazila donor list',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 44 },
+      { label: 'Feb', value: 52 },
+      { label: 'Mar', value: 63 },
+      { label: 'Apr', value: 71 },
+      { label: 'May', value: 75 },
+      { label: 'Jun', value: 80 },
+    ],
+    accessSummary: [
+      'Can only access donors in own upazila',
+      'Can manage union leaders under own upazila',
+      'Can view upazila-wide monthly trends',
+    ],
+  },
+  union_leader: {
+    label: 'Union Leader',
+    scope: 'Union-level operational access',
+    summaries: [
+      { title: 'Union Donors', value: '420', subtitle: 'Verified profiles' },
+      { title: 'Available Donors', value: '238', subtitle: 'Can respond immediately' },
+      { title: 'Follow-ups', value: '39', subtitle: 'Inactive donor outreach' },
+    ],
+    controls: [
+      'Register new donor profiles',
+      'Coordinate donation drives',
+      'Update local availability status',
+      'Download union activity report',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 18 },
+      { label: 'Feb', value: 22 },
+      { label: 'Mar', value: 26 },
+      { label: 'Apr', value: 29 },
+      { label: 'May', value: 31 },
+      { label: 'Jun', value: 36 },
+    ],
+    accessSummary: [
+      'Can only access donors in own union',
+      'Can update local donor records',
+      'Can view and export union report only',
+    ],
+  },
+  donor: {
+    label: 'Donor',
+    scope: 'Self-service personal dashboard',
+    summaries: [
+      { title: 'Your Donations', value: '11', subtitle: 'Lifetime donation count' },
+      { title: 'Last Donation', value: '12 Mar 2026', subtitle: 'Next eligible date soon' },
+      { title: 'Profile Status', value: 'Available', subtitle: 'Visible to requester network' },
+    ],
+    controls: [
+      'Update availability status',
+      'Edit contact preferences',
+      'View donation history',
+      'Download personal certificate',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 1 },
+      { label: 'Feb', value: 0 },
+      { label: 'Mar', value: 1 },
+      { label: 'Apr', value: 1 },
+      { label: 'May', value: 0 },
+      { label: 'Jun', value: 1 },
+    ],
+    accessSummary: [
+      'Can only access own profile and history',
+      'Cannot view admin-level reports',
+      'Can manage own donation availability',
+    ],
+  },
+};
