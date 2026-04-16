@@ -65,7 +65,7 @@ const baseURL = normalizeBaseURL(rawBaseURL);
 
 export const apiClient = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 15000,
   withCredentials: true,
 });
 

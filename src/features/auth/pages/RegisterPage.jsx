@@ -101,9 +101,12 @@ export const RegisterPage = () => {
     } catch (requestError) {
       const serverMessage = requestError?.response?.data?.message;
       const hasResponse = Boolean(requestError?.response);
+      const isTimeout = requestError?.code === 'ECONNABORTED';
       const errorMessage = hasResponse
         ? serverMessage || 'Registration failed due to server validation.'
-        : 'Registration failed: network/CORS issue. Please check internet and try again.';
+        : isTimeout
+          ? 'Registration is taking too long. Server may be waking up, please try again in a few seconds.'
+          : 'Registration failed: network/CORS issue. Please check internet and try again.';
 
       console.error('[AUTH_UI][REGISTER_FAILED]', {
         message: requestError?.message,

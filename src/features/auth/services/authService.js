@@ -1,13 +1,19 @@
 import { apiClient } from '../../../services/apiClient.js';
 
+const AUTH_REQUEST_TIMEOUT_MS = 25000;
+
 export const authService = {
   login: async (payload) => {
-    const response = await apiClient.post('/auth/login', payload);
+    const response = await apiClient.post('/auth/login', payload, {
+      timeout: AUTH_REQUEST_TIMEOUT_MS,
+    });
     return response.data?.data;
   },
 
   register: async (payload) => {
-    const response = await apiClient.post('/auth/register', payload);
+    const response = await apiClient.post('/auth/register', payload, {
+      timeout: AUTH_REQUEST_TIMEOUT_MS,
+    });
     return response.data?.data;
   },
 

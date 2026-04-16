@@ -29,9 +29,12 @@ export const LoginPage = () => {
     } catch (requestError) {
       const serverMessage = requestError?.response?.data?.message;
       const hasResponse = Boolean(requestError?.response);
+      const isTimeout = requestError?.code === 'ECONNABORTED';
       const errorMessage = hasResponse
         ? serverMessage || 'Login failed. Please check your credentials.'
-        : 'Login failed: network/CORS issue. Please check internet and try again.';
+        : isTimeout
+          ? 'Login is taking too long. Server may be waking up, please try again in a few seconds.'
+          : 'Login failed: network/CORS issue. Please check internet and try again.';
 
       console.error('[AUTH_UI][LOGIN_FAILED]', {
         message: requestError?.message,
