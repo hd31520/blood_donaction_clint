@@ -3,12 +3,33 @@ import axios from 'axios';
 const rawBaseURL = import.meta.env.VITE_API_BASE_URL;
 const requestCache = new Map();
 
-if (!rawBaseURL) {
-  throw new Error('VITE_API_BASE_URL is missing. Check your client environment file.');
-}
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
+
+const isLocalHostname = (value) => LOCAL_HOSTNAMES.has(String(value || '').toLowerCase());
 
 const normalizeBaseURL = (value) => {
-  const trimmed = String(value).trim();
+  const fallbackBaseURL = '/api/v1';
+  const trimmed = String(value || '').trim();
+
+  if (!trimmed) {
+    return fallbackBaseURL;
+  }
+
+  // Guard against accidental localhost API in production builds.
+  if (typeof window !== 'undefined') {
+    try {
+      const currentHost = window.location.hostname;
+      const parsed = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+        ? new URL(trimmed)
+        : null;
+
+      if (parsed && isLocalHostname(parsed.hostname) && !isLocalHostname(currentHost)) {
+        return fallbackBaseURL;
+      }
+    } catch {
+      // Ignore URL parsing errors and continue normalization below.
+    }
+  }
 
   if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
     return trimmed;
