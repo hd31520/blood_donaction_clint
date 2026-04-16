@@ -427,6 +427,28 @@ export const LocationSelector = ({
     setSelectedAreaType,
   ]);
 
+  useEffect(() => {
+    if (!hasValidUpazilaSelection) {
+      return;
+    }
+
+    if (isLoadingUnions || isLoadingPouroshavas) {
+      return;
+    }
+
+    // When no area records are available, default to union so manual entry remains possible.
+    if (areaTypeOptions.length === 0 && !selectedAreaType) {
+      setSelectedAreaType('union');
+    }
+  }, [
+    areaTypeOptions.length,
+    hasValidUpazilaSelection,
+    isLoadingPouroshavas,
+    isLoadingUnions,
+    selectedAreaType,
+    setSelectedAreaType,
+  ]);
+
   const isLoadingSelectedAreaType =
     selectedAreaType === 'pouroshava' ? isLoadingPouroshavas : isLoadingUnions;
 

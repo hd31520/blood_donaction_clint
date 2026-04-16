@@ -3,6 +3,7 @@ import { cachedGet } from '../services/apiClient.js';
 import {
   getPublicDistrictsByDivisionId,
   getPublicDivisions,
+  getPublicPouroshavasByCriteria,
   getPublicPouroshavasByUpazilaId,
   getPublicUnionsByUpazilaId,
   getPublicUpazilasByDistrictId,
@@ -403,6 +404,10 @@ export const useLocationCascade = () => {
       setIsLoadingPouroshavas(true);
       setError('');
 
+      const selectedUpazilaNode = upazilas.find((item) => item.id === upazilaId) || null;
+      const selectedDistrictNode = districts.find((item) => item.id === selectedDistrict) || null;
+      const selectedDivisionNode = divisions.find((item) => item.id === selectedDivision) || null;
+
       const loadRequest = forceRefresh
         ? cachedGet(`/locations/upazilas/${upazilaId}/pouroshavas`, {
             ttlMs: 5 * 60 * 1000,
@@ -420,7 +425,16 @@ export const useLocationCascade = () => {
 
       const data = await withPublicDatasetFallback({
         apiLoader: () => loadRequest,
-        publicLoader: () => getPublicPouroshavasByUpazilaId(upazilaId),
+        publicLoader: () =>
+          getPublicPouroshavasByCriteria({
+            upazilaId,
+            upazilaName: selectedUpazilaNode?.name,
+            upazilaBnName: selectedUpazilaNode?.bnName,
+            districtName: selectedDistrictNode?.name,
+            districtBnName: selectedDistrictNode?.bnName,
+            divisionName: selectedDivisionNode?.name,
+            divisionBnName: selectedDivisionNode?.bnName,
+          }),
         fallbackMessage: 'Falling back to public location dataset for pouroshavas.',
         requestSeq,
         currentSeqRef: pouroshavaRequestSeqRef,
