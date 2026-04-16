@@ -34,7 +34,18 @@ const pendingRequests = {
 
 const withPublicDatasetFallback = async ({ apiLoader, publicLoader, fallbackMessage, requestSeq, currentSeqRef, onFallback }) => {
   try {
-    return await apiLoader();
+    const apiData = await apiLoader();
+
+    if (Array.isArray(apiData) && apiData.length === 0) {
+      const publicData = await publicLoader();
+      if (Array.isArray(publicData) && publicData.length > 0) {
+        onFallback?.(publicData);
+        console.warn(fallbackMessage, 'API returned an empty list.');
+        return publicData;
+      }
+    }
+
+    return apiData;
   } catch (apiError) {
     try {
       const publicData = await publicLoader();
