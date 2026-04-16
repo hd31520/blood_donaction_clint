@@ -49,13 +49,33 @@ const getAreaType = (item) => {
 
 const isObjectId = (value) => /^[a-fA-F0-9]{24}$/.test(String(value || ''));
 
+const NORMALIZED_LOCATION_ALIASES = [
+  [/\bchittagong\b/g, 'chattogram'],
+  [/\bchattagram\b/g, 'chattogram'],
+  [/চট্টগ্রাম/g, 'chattogram'],
+  [/\bbarisal\b/g, 'barishal'],
+  [/বরিশাল/g, 'barishal'],
+  [/\bbarisal\b/g, 'barishal'],
+  [/\bmymenshingh\b/g, 'mymensingh'],
+  [/\bnoakhali\b/g, 'noakhali'],
+  [/\bdhaka\b/g, 'dhaka'],
+  [/\bkhulna\b/g, 'khulna'],
+  [/\brajshahi\b/g, 'rajshahi'],
+  [/\brangpur\b/g, 'rangpur'],
+  [/\bsylhet\b/g, 'sylhet'],
+];
+
 const normalizeLocationName = (value = '') => {
-  return value
+  const normalized = value
     .toLowerCase()
     .replace(/district|division|city corporation|zila|জেলা|বিভাগ|সিটি কর্পোরেশন/gi, '')
     .replace(/[.,()/-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+
+  return NORMALIZED_LOCATION_ALIASES.reduce((currentValue, [pattern, replacement]) => {
+    return currentValue.replace(pattern, replacement);
+  }, normalized);
 };
 
 const uniqueCandidates = (values = []) => {
@@ -261,7 +281,9 @@ export const LocationSelector = ({
 
       const matchedDivision = findByCandidates(divisions, divisionCandidates);
       if (!matchedDivision) {
-        setAutoDetectMessage('Current location found, but division could not be matched.');
+        setAutoDetectMessage(
+          'Current location found, but it did not match a division. Please select the division manually.',
+        );
         return;
       }
 
