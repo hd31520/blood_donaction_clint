@@ -4,12 +4,23 @@ const rawBaseURL = import.meta.env.VITE_API_BASE_URL;
 const requestCache = new Map();
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
+const PRODUCTION_API_BASE_URL = 'https://blood-donaction-server.vercel.app/api/v1';
+const LOCAL_API_BASE_URL = '/api/v1';
 
 const isLocalHostname = (value) => LOCAL_HOSTNAMES.has(String(value || '').toLowerCase());
 
+const getDefaultBaseURL = () => {
+  if (typeof window === 'undefined') {
+    return PRODUCTION_API_BASE_URL;
+  }
+
+  return isLocalHostname(window.location.hostname) ? LOCAL_API_BASE_URL : PRODUCTION_API_BASE_URL;
+};
+
 const normalizeBaseURL = (value) => {
-  const fallbackBaseURL = '/api/v1';
+  const fallbackBaseURL = getDefaultBaseURL();
   const trimmed = String(value || '').trim();
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
 
   if (!trimmed) {
     return fallbackBaseURL;
@@ -32,6 +43,10 @@ const normalizeBaseURL = (value) => {
   }
 
   if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+    if (trimmed.startsWith('/') && !isLocalHostname(currentHostname)) {
+      return fallbackBaseURL;
+    }
+
     return trimmed;
   }
 
