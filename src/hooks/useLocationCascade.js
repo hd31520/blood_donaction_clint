@@ -318,6 +318,10 @@ export const useLocationCascade = () => {
       setIsLoadingUnions(true);
       setError('');
 
+      const selectedUpazilaNode = upazilas.find((item) => item.id === upazilaId) || null;
+      const selectedDistrictNode = districts.find((item) => item.id === selectedDistrict) || null;
+      const selectedDivisionNode = divisions.find((item) => item.id === selectedDivision) || null;
+
       logUnionDebug('Unions API request params', {
         endpoint: `/locations/upazilas/${upazilaId}/unions`,
         upazilaId,
@@ -337,7 +341,16 @@ export const useLocationCascade = () => {
 
       const data = await withPublicDatasetFallback({
         apiLoader: () => loadRequest,
-        publicLoader: () => getPublicUnionsByUpazilaId(upazilaId),
+        publicLoader: () =>
+          getPublicUnionsByUpazilaId({
+            upazilaId,
+            upazilaName: selectedUpazilaNode?.name,
+            upazilaBnName: selectedUpazilaNode?.bnName,
+            districtName: selectedDistrictNode?.name,
+            districtBnName: selectedDistrictNode?.bnName,
+            divisionName: selectedDivisionNode?.name,
+            divisionBnName: selectedDivisionNode?.bnName,
+          }),
         fallbackMessage: 'Falling back to public location dataset for unions.',
         requestSeq,
         currentSeqRef: unionRequestSeqRef,

@@ -52,6 +52,78 @@ const findUpazilaNode = (districtNode, upazilaId) => {
   return districtNode?.upazilas?.find((upazila) => String(upazila.id) === String(upazilaId)) || null;
 };
 
+const normalizeName = (value = '') => {
+  return String(value)
+    .toLowerCase()
+    .replace(/district|division|city corporation|zila|জেলা|বিভাগ|সিটি কর্পোরেশন/gi, '')
+    .replace(/[.,()/-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const isNumericLike = (value) => /^\d+$/.test(String(value || '').trim());
+
+const resolveUpazilaByCriteria = (dataset, criteria = {}) => {
+  const hierarchy = dataset?.hierarchical || [];
+  const idCandidate = String(criteria.upazilaId || '').trim();
+  const normalizedName = normalizeName(criteria.upazilaName || criteria.upazilaBnName || '');
+  const normalizedDistrictName = normalizeName(criteria.districtName || criteria.districtBnName || '');
+  const normalizedDivisionName = normalizeName(criteria.divisionName || criteria.divisionBnName || '');
+
+  if (idCandidate && isNumericLike(idCandidate)) {
+    for (const divisionNode of hierarchy) {
+      for (const districtNode of divisionNode.districts || []) {
+        const matchedUpazila = findUpazilaNode(districtNode, idCandidate);
+        if (matchedUpazila) {
+          return { divisionNode, districtNode, upazilaNode: matchedUpazila };
+        }
+      }
+    }
+  }
+
+  if (!normalizedName) {
+    return null;
+  }
+
+  for (const divisionNode of hierarchy) {
+    const divisionName = normalizeName(divisionNode.name);
+    const divisionBnName = normalizeName(divisionNode.bnName);
+    const matchesDivision =
+      !normalizedDivisionName ||
+      normalizedDivisionName === divisionName ||
+      normalizedDivisionName === divisionBnName;
+
+    if (!matchesDivision) {
+      continue;
+    }
+
+    for (const districtNode of divisionNode.districts || []) {
+      const districtName = normalizeName(districtNode.name);
+      const districtBnName = normalizeName(districtNode.bnName);
+      const matchesDistrict =
+        !normalizedDistrictName ||
+        normalizedDistrictName === districtName ||
+        normalizedDistrictName === districtBnName;
+
+      if (!matchesDistrict) {
+        continue;
+      }
+
+      const matchedUpazila = (districtNode.upazilas || []).find((upazila) => {
+        const upazilaName = normalizeName(upazila.name);
+        const upazilaBnName = normalizeName(upazila.bnName);
+        return normalizedName === upazilaName || normalizedName === upazilaBnName;
+      });
+
+      if (matchedUpazila) {
+        return { divisionNode, districtNode, upazilaNode: matchedUpazila };
+      }
+    }
+  }
+
+  return null;
+};
+
 export const getPublicDivisions = async () => {
   const dataset = await loadPublicLocationDataset();
   return (dataset?.hierarchical || []).map((division) => toLocationItem(division));
@@ -84,12 +156,29 @@ export const getPublicUpazilasByDistrictId = async (districtId) => {
   return [];
 };
 
-export const getPublicUnionsByUpazilaId = async (upazilaId) => {
+export const getPublicUnionsByUpazilaId = async (criteriaOrUpazilaId) => {
   const dataset = await loadPublicLocationDataset();
+  const criteria =
+    typeof criteriaOrUpazilaId === 'object' && criteriaOrUpazilaId !== null
+      ? criteriaOrUpazilaId
+      : { upazilaId: criteriaOrUpazilaId };
+
+  const resolved = resolveUpazilaByCriteria(dataset, criteria);
+
+  if (resolved?.upazilaNode) {
+    return (resolved.upazilaNode.unions || []).map((union) =>
+      toLocationItem(union, {
+        divisionId: String(union.divisionId),
+        districtId: String(union.districtId),
+        upazilaId: String(union.upazilaId),
+        areaType: 'union',
+      }),
+    );
+  }
 
   for (const divisionNode of dataset?.hierarchical || []) {
     for (const districtNode of divisionNode.districts || []) {
-      const upazilaNode = findUpazilaNode(districtNode, upazilaId);
+      const upazilaNode = findUpazilaNode(districtNode, criteria.upazilaId);
       if (!upazilaNode) {
         continue;
       }
