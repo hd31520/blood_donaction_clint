@@ -1,5 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cachedGet } from '../services/apiClient.js';
+import {
+  getPublicDistrictsByDivisionId,
+  getPublicDivisions,
+  getPublicPouroshavasByUpazilaId,
+  getPublicUnionsByUpazilaId,
+  getPublicUpazilasByDistrictId,
+} from '../services/locationDataset.js';
 
 const logUnionDebug = (label, payload) => {
   if (!import.meta.env.DEV) {
@@ -23,6 +30,25 @@ const pendingRequests = {
   upazilasByDistrict: new Map(),
   unionsByUpazila: new Map(),
   pouroshavasByUpazila: new Map(),
+};
+
+const withPublicDatasetFallback = async ({ apiLoader, publicLoader, fallbackMessage, requestSeq, currentSeqRef, onFallback }) => {
+  try {
+    return await apiLoader();
+  } catch (apiError) {
+    try {
+      const publicData = await publicLoader();
+      onFallback?.(publicData);
+      console.warn(fallbackMessage, apiError);
+      return publicData;
+    } catch (publicError) {
+      if (requestSeq !== currentSeqRef.current) {
+        return [];
+      }
+
+      throw apiError ?? publicError;
+    }
+  }
 };
 
 const getOrCreatePendingRequest = (map, key, fetcher) => {
@@ -121,7 +147,13 @@ export const useLocationCascade = () => {
         pendingRequests.divisions = loadRequest;
       }
 
-      const data = await loadRequest;
+      const data = await withPublicDatasetFallback({
+        apiLoader: () => loadRequest,
+        publicLoader: getPublicDivisions,
+        fallbackMessage: 'Falling back to public location dataset for divisions.',
+        requestSeq: 0,
+        currentSeqRef: districtRequestSeqRef,
+      });
       locationStateCache.divisions = data;
       setDivisions(data);
     } catch (err) {
@@ -160,7 +192,13 @@ export const useLocationCascade = () => {
             return response?.data?.data || [];
           });
 
-      const data = await loadRequest;
+      const data = await withPublicDatasetFallback({
+        apiLoader: () => loadRequest,
+        publicLoader: () => getPublicDistrictsByDivisionId(divisionId),
+        fallbackMessage: 'Falling back to public location dataset for districts.',
+        requestSeq,
+        currentSeqRef: districtRequestSeqRef,
+      });
 
       if (requestSeq !== districtRequestSeqRef.current) {
         return;
@@ -210,7 +248,13 @@ export const useLocationCascade = () => {
             return response?.data?.data || [];
           });
 
-      const data = await loadRequest;
+      const data = await withPublicDatasetFallback({
+        apiLoader: () => loadRequest,
+        publicLoader: () => getPublicUpazilasByDistrictId(districtId),
+        fallbackMessage: 'Falling back to public location dataset for upazilas.',
+        requestSeq,
+        currentSeqRef: upazilaRequestSeqRef,
+      });
 
       if (requestSeq !== upazilaRequestSeqRef.current) {
         return;
@@ -280,7 +324,13 @@ export const useLocationCascade = () => {
             return response?.data?.data || [];
           });
 
-      const data = await loadRequest;
+      const data = await withPublicDatasetFallback({
+        apiLoader: () => loadRequest,
+        publicLoader: () => getPublicUnionsByUpazilaId(upazilaId),
+        fallbackMessage: 'Falling back to public location dataset for unions.',
+        requestSeq,
+        currentSeqRef: unionRequestSeqRef,
+      });
 
       if (requestSeq !== unionRequestSeqRef.current) {
         return;
@@ -344,7 +394,13 @@ export const useLocationCascade = () => {
             },
           );
 
-      const data = await loadRequest;
+      const data = await withPublicDatasetFallback({
+        apiLoader: () => loadRequest,
+        publicLoader: () => getPublicPouroshavasByUpazilaId(upazilaId),
+        fallbackMessage: 'Falling back to public location dataset for pouroshavas.',
+        requestSeq,
+        currentSeqRef: pouroshavaRequestSeqRef,
+      });
 
       if (requestSeq !== pouroshavaRequestSeqRef.current) {
         return;
