@@ -69,6 +69,55 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
+apiClient.interceptors.request.use(
+  (config) => {
+    if (import.meta.env.DEV) {
+      console.info('[API][REQUEST]', {
+        method: config.method,
+        baseURL: config.baseURL,
+        url: config.url,
+      });
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error('[API][REQUEST_ERROR]', {
+      message: error?.message,
+    });
+    return Promise.reject(error);
+  },
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || error?.message;
+    const method = error?.config?.method;
+    const url = error?.config?.url;
+
+    if (!error?.response) {
+      console.error('[API][NETWORK_OR_CORS_ERROR]', {
+        method,
+        url,
+        message,
+        hint: 'No response received. Check server availability, CORS, and HTTPS URL.',
+      });
+    } else {
+      console.error('[API][RESPONSE_ERROR]', {
+        method,
+        url,
+        status,
+        message,
+        payload: error?.response?.data,
+      });
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 const buildCacheKey = (url, params = {}) => {
   return `${url}:${JSON.stringify(params)}`;
 };

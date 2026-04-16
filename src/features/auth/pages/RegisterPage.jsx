@@ -99,8 +99,28 @@ export const RegisterPage = () => {
       toast.success('Registration successful. Welcome!');
       navigate(getRoleDefaultPath(user?.role), { replace: true });
     } catch (requestError) {
-      const errorMessage =
-        requestError?.response?.data?.message || 'Registration failed. Please try again.';
+      const serverMessage = requestError?.response?.data?.message;
+      const hasResponse = Boolean(requestError?.response);
+      const errorMessage = hasResponse
+        ? serverMessage || 'Registration failed due to server validation.'
+        : 'Registration failed: network/CORS issue. Please check internet and try again.';
+
+      console.error('[AUTH_UI][REGISTER_FAILED]', {
+        message: requestError?.message,
+        status: requestError?.response?.status,
+        response: requestError?.response?.data,
+        payloadPreview: {
+          email: formData.email,
+          role: formData.role,
+          divisionId: formData.divisionId,
+          districtId: formData.districtId,
+          upazilaId: formData.upazilaId,
+          areaType: formData.areaType,
+          hasUnionId: Boolean(formData.unionId),
+          hasUnionName: Boolean(formData.unionName),
+        },
+      });
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

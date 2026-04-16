@@ -27,8 +27,21 @@ export const LoginPage = () => {
       const nextPath = location.state?.from?.pathname || fallbackPath;
       navigate(nextPath, { replace: true });
     } catch (requestError) {
-      const errorMessage =
-        requestError?.response?.data?.message || 'Login failed. Please check your credentials.';
+      const serverMessage = requestError?.response?.data?.message;
+      const hasResponse = Boolean(requestError?.response);
+      const errorMessage = hasResponse
+        ? serverMessage || 'Login failed. Please check your credentials.'
+        : 'Login failed: network/CORS issue. Please check internet and try again.';
+
+      console.error('[AUTH_UI][LOGIN_FAILED]', {
+        message: requestError?.message,
+        status: requestError?.response?.status,
+        response: requestError?.response?.data,
+        payloadPreview: {
+          email,
+        },
+      });
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
