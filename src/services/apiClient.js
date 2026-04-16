@@ -1,11 +1,31 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL;
 const requestCache = new Map();
 
-if (!baseURL) {
+if (!rawBaseURL) {
   throw new Error('VITE_API_BASE_URL is missing. Check your client environment file.');
 }
+
+const normalizeBaseURL = (value) => {
+  const trimmed = String(value).trim();
+
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('//')) {
+    return `${window.location.protocol}${trimmed}`;
+  }
+
+  if (trimmed.startsWith(':')) {
+    return `${window.location.protocol}//${window.location.hostname}${trimmed}`;
+  }
+
+  return `${window.location.protocol}//${trimmed}`;
+};
+
+const baseURL = normalizeBaseURL(rawBaseURL);
 
 export const apiClient = axios.create({
   baseURL,

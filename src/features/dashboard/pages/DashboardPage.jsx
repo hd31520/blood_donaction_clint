@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { RoleSummaryPanel } from '../../../components/dashboard/RoleSummaryPanel.jsx';
 import { MiniBarChart } from '../../../components/charts/MiniBarChart.jsx';
 import { useAuth } from '../../auth/context/AuthContext.jsx';
@@ -13,6 +15,9 @@ export const DashboardPage = () => {
         <p className="eyebrow">Role Dashboard</p>
         <h2>{roleData.label} Control Center</h2>
         <p className="role-scope">{roleData.scope}</p>
+        <Link to="/home" className="inline-link-btn">
+          Home
+        </Link>
       </header>
 
       <RoleSummaryPanel summaries={roleData.summaries} />

@@ -12,16 +12,22 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@babel/core": "^7.25.2",
+    "@remix-run/router": "^1.23.2",
     "axios": "^1.8.4",
     "lucide-react": "^0.511.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.0"
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^6.30.0",
+    "react-select": "^5.10.2"
   },
   "devDependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.60.1",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "^4.4.1",
+    "esbuild": "^0.28.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.5.3",

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext.jsx';
@@ -21,11 +22,15 @@ export const LoginPage = () => {
 
     try {
       const user = await login({ email, password });
+      toast.success('Login successful.');
       const fallbackPath = getRoleDefaultPath(user?.role);
       const nextPath = location.state?.from?.pathname || fallbackPath;
       navigate(nextPath, { replace: true });
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || 'Login failed. Please check your credentials.');
+      const errorMessage =
+        requestError?.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getRoleDefaultPath } from '../utils/roleRedirect.js';
 
@@ -13,9 +15,14 @@ export const RegisterPage = () => {
     email: '',
     password: '',
     bloodGroup: 'A+',
+    role: 'donor',
+    divisionId: '',
     districtId: '',
     upazilaId: '',
+    areaType: '',
     unionId: '',
+    unionName: '',
+    wardNumber: '',
     phone: '',
     location: '',
   });
@@ -29,16 +36,73 @@ export const RegisterPage = () => {
     }));
   };
 
+  const handleLocationChange = (locationData) => {
+    setFormData((previous) => ({
+      ...previous,
+      ...locationData,
+    }));
+  };
+
+  const hasCompleteLocation = Boolean(
+    formData.divisionId &&
+      formData.districtId &&
+      formData.upazilaId &&
+      formData.areaType &&
+      (formData.unionId || formData.unionName) &&
+      (formData.areaType === 'pouroshava' ? formData.wardNumber : true),
+  );
+
+  const getMissingLocationFields = () => {
+    const missingFields = [];
+
+    if (!formData.divisionId) {
+      missingFields.push('division');
+    }
+    if (!formData.districtId) {
+      missingFields.push('district');
+    }
+    if (!formData.upazilaId) {
+      missingFields.push('upazila');
+    }
+    if (!formData.areaType) {
+      missingFields.push('area type');
+    }
+    if (!formData.unionId) {
+      if (!formData.unionName) {
+        missingFields.push(formData.areaType === 'pouroshava' ? 'pouroshava' : 'union');
+      }
+    }
+
+    if (formData.areaType === 'pouroshava' && !formData.wardNumber) {
+      missingFields.push('ward number');
+    }
+
+    return missingFields;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+
+    if (!hasCompleteLocation) {
+      const missingLocationFields = getMissingLocationFields();
+      const errorMessage = `Please select required location fields: ${missingLocationFields.join(', ')}.`;
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const user = await register(formData);
+      toast.success('Registration successful. Welcome!');
       navigate(getRoleDefaultPath(user?.role), { replace: true });
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || 'Registration failed. Please try again.');
+      const errorMessage =
+        requestError?.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -95,31 +159,18 @@ export const RegisterPage = () => {
             <option value="O-">O-</option>
           </select>
 
-          <label htmlFor="registerDistrict">District ID</label>
-          <input
-            id="registerDistrict"
-            type="text"
-            value={formData.districtId}
-            onChange={handleChange('districtId')}
-            required
-          />
+          <label htmlFor="registerRole">Account Type</label>
+          <select id="registerRole" value={formData.role} onChange={handleChange('role')} required>
+            <option value="donor">Donor</option>
+            <option value="finder">Finder</option>
+          </select>
 
-          <label htmlFor="registerUpazila">Upazila ID</label>
-          <input
-            id="registerUpazila"
-            type="text"
-            value={formData.upazilaId}
-            onChange={handleChange('upazilaId')}
+          <label htmlFor="registerDistrict">Location</label>
+          <LocationSelector
             required
-          />
-
-          <label htmlFor="registerUnion">Union ID</label>
-          <input
-            id="registerUnion"
-            type="text"
-            value={formData.unionId}
-            onChange={handleChange('unionId')}
-            required
+            mode="required"
+            idPrefix="register"
+            onChange={handleLocationChange}
           />
 
           <label htmlFor="registerPhone">Phone</label>

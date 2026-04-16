@@ -15,4 +15,14 @@ export const authService = {
     const response = await apiClient.get('/auth/me');
     return response.data?.data;
   },
+
+  updateMe: async (payload) => {
+    const response = await apiClient.put('/auth/me', payload);
+    return response.data?.data;
+  },
+
+  uploadProfileImage: async (payload) => {
+    const response = await apiClient.post('/auth/me/profile-image', payload);
+    return response.data?.data;
+  },
 };

@@ -1,5 +1,5 @@
 export const getRoleDefaultPath = (role) => {
-  if (role === 'donor') {
+  if (role === 'donor' || role === 'finder') {
     return '/donors';
   }
 

@@ -38,6 +38,12 @@ export const AuthProvider = ({ children }) => {
     bootstrap();
   }, []);
 
+  const refreshUser = async () => {
+    const me = await authService.getMe();
+    setUser(me);
+    return me;
+  };
+
   const login = async (credentials) => {
     const data = await authService.login(credentials);
     tokenStorage.set(data.token);
@@ -72,6 +78,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      refreshUser,
     }),
     [isLoading, token, user],
   );

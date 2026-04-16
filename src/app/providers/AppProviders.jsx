@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 import { GlobalWatermark } from '../../components/global/GlobalWatermark.jsx';
 import { AuthProvider } from '../../features/auth/context/AuthContext.jsx';
@@ -13,10 +14,16 @@ export const AppProviders = () => {
   const watermarkColor = import.meta.env.VITE_WATERMARK_COLOR || '#7a8b84';
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <AuthProvider>
         <NotificationProvider>
           <AppRouter />
+          <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
           <GlobalWatermark
             brandText={watermarkText}
             tagline={watermarkTagline}

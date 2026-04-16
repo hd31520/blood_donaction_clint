@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom';
+
 export const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="hero-grid">
       <article className="hero-card primary-card reveal">
@@ -8,8 +12,8 @@ export const Hero = () => {
           support network for emergency and planned requests.
         </p>
         <div className="hero-actions">
-          <button type="button">Become a Donor</button>
-          <button type="button" className="ghost-btn">
+          <button type="button" onClick={() => navigate('/register')}>Become a Donor</button>
+          <button type="button" className="ghost-btn" onClick={() => navigate('/donors')}>
             Find Donors
           </button>
         </div>

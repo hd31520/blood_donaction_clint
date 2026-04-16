@@ -6,11 +6,14 @@ import { ProtectedRoute } from './ProtectedRoute.jsx';
 import { AppShell } from '../../components/layout/AppShell.jsx';
 
 const CommunityPage = lazy(() => import('../../features/community/pages/CommunityPage.jsx').then((module) => ({ default: module.CommunityPage })));
+const HomePage = lazy(() => import('../../features/home/pages/HomePage.jsx').then((module) => ({ default: module.HomePage })));
 const LoginPage = lazy(() => import('../../features/auth/pages/LoginPage.jsx').then((module) => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('../../features/auth/pages/RegisterPage.jsx').then((module) => ({ default: module.RegisterPage })));
 const DashboardPage = lazy(() => import('../../features/dashboard/pages/DashboardPage.jsx').then((module) => ({ default: module.DashboardPage })));
 const DonorProfilePage = lazy(() => import('../../features/donors/pages/DonorProfilePage.jsx').then((module) => ({ default: module.DonorProfilePage })));
 const DonorSearchPage = lazy(() => import('../../features/donors/pages/DonorSearchPage.jsx').then((module) => ({ default: module.DonorSearchPage })));
+const PatientListPage = lazy(() => import('../../features/patients/pages/PatientListPage.jsx').then((module) => ({ default: module.PatientListPage })));
+const ProfilePage = lazy(() => import('../../features/profile/pages/ProfilePage.jsx').then((module) => ({ default: module.ProfilePage })));
 const ReportsPage = lazy(() => import('../../features/reports/pages/ReportsPage.jsx').then((module) => ({ default: module.ReportsPage })));
 
 const RouteLoader = () => <div className="page-loader">Loading page...</div>;
@@ -18,6 +21,15 @@ const RouteLoader = () => <div className="page-loader">Loading page...</div>;
 export const AppRouter = () => {
   return (
     <Routes>
+      <Route
+        path="/donors/:donorId"
+        element={
+          <Suspense fallback={<RouteLoader />}>
+            <DonorProfilePage />
+          </Suspense>
+        }
+      />
+
       <Route
         path="/login"
         element={
@@ -48,7 +60,15 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to="/home" replace />} />
+        <Route
+          path="home"
+          element={
+            <Suspense fallback={<RouteLoader />}>
+              <HomePage />
+            </Suspense>
+          }
+        />
         <Route
           path="dashboard"
           element={
@@ -60,16 +80,32 @@ export const AppRouter = () => {
         <Route
           path="donors"
           element={
-            <Suspense fallback={<RouteLoader />}>
-              <DonorSearchPage />
-            </Suspense>
+            <ProtectedRoute
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder']}
+            >
+              <Suspense fallback={<RouteLoader />}>
+                <DonorSearchPage />
+              </Suspense>
+            </ProtectedRoute>
           }
         />
         <Route
-          path="donors/:donorId"
+          path="patients"
+          element={
+            <ProtectedRoute
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder']}
+            >
+              <Suspense fallback={<RouteLoader />}>
+                <PatientListPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profile"
           element={
             <Suspense fallback={<RouteLoader />}>
-              <DonorProfilePage />
+              <ProfilePage />
             </Suspense>
           }
         />
@@ -92,7 +128,7 @@ export const AppRouter = () => {
           }
         />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
 };
