@@ -1,4 +1,4 @@
-import { Home, Search, BarChart3, Users, UserCircle2, ClipboardList, MessageCircle, UserCog } from 'lucide-react';
+import { Home, Search, BarChart3, Users, UserCircle2, ClipboardList, MessageCircle, UserCog, Building2 } from 'lucide-react';
 
 export const appRoutes = [
   {
@@ -42,6 +42,13 @@ export const appRoutes = [
     path: '/reports',
     icon: BarChart3,
     roles: ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin'],
+  },
+  {
+    key: 'hospitals',
+    label: 'Hospitals',
+    path: '/hospitals',
+    icon: Building2,
+    roles: ['super_admin', 'district_admin', 'upazila_admin'],
   },
   {
     key: 'users',

@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import('../../features/dashboard/pages/Dashboar
 const DonorProfilePage = lazy(() => import('../../features/donors/pages/DonorProfilePage.jsx').then((module) => ({ default: module.DonorProfilePage })));
 const DonorSearchPage = lazy(() => import('../../features/donors/pages/DonorSearchPage.jsx').then((module) => ({ default: module.DonorSearchPage })));
 const ChatPage = lazy(() => import('../../features/chat/pages/ChatPage.jsx').then((module) => ({ default: module.ChatPage })));
+const HospitalManagementPage = lazy(() => import('../../features/hospitals/pages/HospitalManagementPage.jsx').then((module) => ({ default: module.HospitalManagementPage })));
 const RoleManagementPage = lazy(() => import('../../features/management/pages/RoleManagementPage.jsx').then((module) => ({ default: module.RoleManagementPage })));
 const PatientListPage = lazy(() => import('../../features/patients/pages/PatientListPage.jsx').then((module) => ({ default: module.PatientListPage })));
 const ProfilePage = lazy(() => import('../../features/profile/pages/ProfilePage.jsx').then((module) => ({ default: module.ProfilePage })));
@@ -97,6 +98,16 @@ export const AppRouter = () => {
             <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin']}>
               <Suspense fallback={<RouteLoader />}>
                 <RoleManagementPage />
+              </Suspense>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="hospitals"
+          element={
+            <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin']}>
+              <Suspense fallback={<RouteLoader />}>
+                <HospitalManagementPage />
               </Suspense>
             </ProtectedRoute>
           }

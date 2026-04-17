@@ -6,7 +6,7 @@ import { donorSearchService } from '../../donors/services/donorSearchService.js'
 import { notificationService } from '../../notifications/services/notificationService.js';
 import { reportService } from '../../reports/services/reportService.js';
 
-const EVENT_CREATOR_ROLES = ['super_admin', 'district_admin', 'upazila_admin'];
+const EVENT_CREATOR_ROLES = ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin'];
 
 const buildEventId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -235,7 +235,7 @@ export const CommunityPage = () => {
             </form>
           ) : (
             <p className="muted-text compact-text">
-              Event creation is available only for Super Admin, District Admin, and Upazila Admin.
+              Event creation is available for Super Admin, District Admin, Upazila Admin, Union Leader, and Ward Admin.
             </p>
           )}
         </article>
