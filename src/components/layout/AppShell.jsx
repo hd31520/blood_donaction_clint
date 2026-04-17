@@ -108,19 +108,6 @@ export const AppShell = () => {
         <main className="app-content">
           <Outlet />
         </main>
-
-        <nav className="mobile-nav">
-          {visibleRoutes.map((route) => (
-            <NavItem
-              key={route.key}
-              to={route.path}
-              icon={route.icon}
-              label={route.label}
-              mobile
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          ))}
-        </nav>
       </div>
     </div>
   );

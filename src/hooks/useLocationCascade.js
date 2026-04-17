@@ -4,7 +4,6 @@ import {
   getPublicDistrictsByDivisionId,
   getPublicDivisions,
   getPublicPouroshavasByCriteria,
-  getPublicPouroshavasByUpazilaId,
   getPublicUnionsByUpazilaId,
   getPublicUpazilasByDistrictId,
 } from '../services/locationDataset.js';

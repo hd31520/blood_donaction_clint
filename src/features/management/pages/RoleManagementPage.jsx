@@ -31,6 +31,12 @@ const ROLE_DEFINITIONS = [
     badge: 'Union',
   },
   {
+    role: 'ward_admin',
+    title: 'Ward Admin',
+    description: 'Ward-scoped management for pouroshava or union areas with local reports and notifications.',
+    badge: 'Ward',
+  },
+  {
     role: 'donor',
     title: 'Donor',
     description: 'Self profile and donor profile access/update, donation history, blood need actions, and self notifications.',
@@ -45,10 +51,11 @@ const ROLE_DEFINITIONS = [
 ];
 
 const ROLE_OPTIONS_BY_SCOPE = {
-  super_admin: ['district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder'],
-  district_admin: ['upazila_admin', 'union_leader', 'donor', 'finder'],
-  upazila_admin: ['union_leader', 'donor', 'finder'],
+  super_admin: ['district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder'],
+  district_admin: ['upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder'],
+  upazila_admin: ['union_leader', 'ward_admin', 'donor', 'finder'],
   union_leader: ['donor', 'finder'],
+  ward_admin: ['donor', 'finder'],
   donor: [],
   finder: [],
 };
@@ -154,12 +161,12 @@ export const RoleManagementPage = () => {
       return;
     }
 
-    if ((form.role === 'union_leader' || form.role === 'donor' || form.role === 'finder') && !form.areaType) {
+    if ((form.role === 'union_leader' || form.role === 'ward_admin' || form.role === 'donor' || form.role === 'finder') && !form.areaType) {
       toast.error('Please select a union or pouroshava area type.');
       return;
     }
 
-    if ((form.role === 'union_leader' || form.role === 'donor' || form.role === 'finder') && !form.unionId && !form.unionName) {
+    if ((form.role === 'union_leader' || form.role === 'ward_admin' || form.role === 'donor' || form.role === 'finder') && !form.unionId && !form.unionName) {
       toast.error('Please select a union or enter a union name.');
       return;
     }

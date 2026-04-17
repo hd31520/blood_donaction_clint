@@ -1622,7 +1622,7 @@ button:hover {
   }
 
   .app-content {
-    padding: 1rem 1rem 5.2rem;
+    padding: 1rem;
   }
 
   .mobile-header .notification-center {
@@ -1910,18 +1910,7 @@ button:hover {
   }
 
   .mobile-nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.4rem;
-    padding: 0.5rem 0.6rem;
-    background: rgba(17, 29, 29, 0.95);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(8px);
+    display: none;
   }
 
   .mobile-nav-item {
@@ -1985,22 +1974,11 @@ button:hover {
 }
 
 .app-content {
-  padding: 1rem 1rem 5.2rem;
+  padding: 1rem;
 }
 
 .mobile-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
-  gap: 0.4rem;
-  padding: 0.5rem 0.6rem;
-  background: rgba(17, 29, 29, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
+  display: none;
 }
 
 .mobile-nav-item {

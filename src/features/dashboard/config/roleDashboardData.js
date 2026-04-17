@@ -111,6 +111,34 @@ export const roleDashboardData = {
       'Can view and export union report only',
     ],
   },
+  ward_admin: {
+    label: 'Ward Admin',
+    scope: 'Union or pouroshava ward operational access',
+    summaries: [
+      { title: 'Ward Donors', value: '420', subtitle: 'Verified profiles' },
+      { title: 'Available Donors', value: '238', subtitle: 'Can respond immediately' },
+      { title: 'Follow-ups', value: '39', subtitle: 'Inactive donor outreach' },
+    ],
+    controls: [
+      'Register new donor profiles',
+      'Coordinate donation drives',
+      'Update local availability status',
+      'Download ward activity report',
+    ],
+    chartSeries: [
+      { label: 'Jan', value: 18 },
+      { label: 'Feb', value: 22 },
+      { label: 'Mar', value: 26 },
+      { label: 'Apr', value: 29 },
+      { label: 'May', value: 31 },
+      { label: 'Jun', value: 36 },
+    ],
+    accessSummary: [
+      'Can only access donors in own union or pouroshava ward scope',
+      'Can update local donor records',
+      'Can view and export local report only',
+    ],
+  },
   donor: {
     label: 'Donor',
     scope: 'Self-service personal dashboard',

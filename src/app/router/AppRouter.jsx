@@ -83,7 +83,7 @@ export const AppRouter = () => {
           path="donors"
           element={
             <ProtectedRoute
-              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder']}
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder']}
             >
               <Suspense fallback={<RouteLoader />}>
                 <DonorSearchPage />
@@ -94,7 +94,7 @@ export const AppRouter = () => {
         <Route
           path="users"
           element={
-            <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin']}>
               <Suspense fallback={<RouteLoader />}>
                 <RoleManagementPage />
               </Suspense>
@@ -105,7 +105,7 @@ export const AppRouter = () => {
           path="chat"
           element={
             <ProtectedRoute
-              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder']}
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder']}
             >
               <Suspense fallback={<RouteLoader />}>
                 <ChatPage />
@@ -117,7 +117,7 @@ export const AppRouter = () => {
           path="patients"
           element={
             <ProtectedRoute
-              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder']}
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder']}
             >
               <Suspense fallback={<RouteLoader />}>
                 <PatientListPage />
@@ -136,7 +136,7 @@ export const AppRouter = () => {
         <Route
           path="reports"
           element={
-            <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader']}>
+            <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin']}>
               <Suspense fallback={<RouteLoader />}>
                 <ReportsPage />
               </Suspense>
