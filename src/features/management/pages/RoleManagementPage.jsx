@@ -5,66 +5,11 @@ import { LocationSelector } from '../../../components/location/LocationSelector.
 import { useAuth } from '../../auth/context/AuthContext.jsx';
 import { userService } from '../../../services/userService.js';
 
-const ROLE_DEFINITIONS = [
-  {
-    role: 'super_admin',
-    title: 'Super Admin',
-    description: 'Full user management, full donor access, full reporting and notifications.',
-    badge: 'Global',
-  },
-  {
-    role: 'district_admin',
-    title: 'District Admin',
-    description: 'District-scoped user and donor management with district reports and notifications.',
-    badge: 'District',
-  },
-  {
-    role: 'upazila_admin',
-    title: 'Upazila Admin',
-    description: 'Upazila-scoped user and donor management with upazila reports and notifications.',
-    badge: 'Upazila',
-  },
-  {
-    role: 'union_leader',
-    title: 'Union Leader',
-    description: 'Union-scoped user and donor management with union reports and notifications.',
-    badge: 'Union',
-  },
-  {
-    role: 'ward_admin',
-    title: 'Ward Admin',
-    description: 'Ward-scoped management for pouroshava or union areas with local reports and notifications.',
-    badge: 'Ward',
-  },
-  {
-    role: 'donor',
-    title: 'Donor',
-    description: 'Self profile and donor profile access/update, donation history, blood need actions, and self notifications.',
-    badge: 'Self',
-  },
-  {
-    role: 'finder',
-    title: 'Finder',
-    description: 'Same self-level donor/blood-need permissions as donor plus self notifications.',
-    badge: 'Self',
-  },
-];
-
-const ROLE_OPTIONS_BY_SCOPE = {
-  super_admin: ['district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder'],
-  district_admin: ['upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder'],
-  upazila_admin: ['union_leader', 'ward_admin', 'donor', 'finder'],
-  union_leader: ['donor', 'finder'],
-  ward_admin: ['donor', 'finder'],
-  donor: [],
-  finder: [],
-};
-
 const BASE_FORM = {
   name: '',
   email: '',
   password: '',
-  role: 'donor',
+  role: '',
   bloodGroup: 'A+',
   phone: '',
   location: '',
@@ -77,22 +22,63 @@ const BASE_FORM = {
   wardNumber: '',
 };
 
-const formatRoleLabel = (value) =>
-  ROLE_DEFINITIONS.find((item) => item.role === value)?.title || value;
-
 const uniqueRoles = (roles) => [...new Set(roles.filter(Boolean))];
 
 export const RoleManagementPage = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMetaLoading, setIsMetaLoading] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState(BASE_FORM);
   const [locationKey, setLocationKey] = useState(0);
   const [roleDrafts, setRoleDrafts] = useState({});
+  const [managementMeta, setManagementMeta] = useState({
+    roles: [],
+    assignableRoles: [],
+    rolesRequiringAreaType: [],
+    rolesRequiringUnionSelection: [],
+    defaultCreateRole: null,
+  });
 
-  const allowedRoles = useMemo(() => ROLE_OPTIONS_BY_SCOPE[user?.role] || [], [user?.role]);
+  const allowedRoles = useMemo(() => managementMeta.assignableRoles || [], [managementMeta.assignableRoles]);
+
+  const roleLabelMap = useMemo(() => {
+    const map = new Map();
+    (managementMeta.roles || []).forEach((item) => {
+      map.set(item.role, item.title || item.role);
+    });
+    return map;
+  }, [managementMeta.roles]);
+
+  const formatRoleLabel = (value) => roleLabelMap.get(value) || value;
+
+  const loadManagementMeta = async () => {
+    setIsMetaLoading(true);
+
+    try {
+      const response = await userService.getUserManagementMeta();
+      const data = response.data || {};
+
+      setManagementMeta({
+        roles: data.roles || [],
+        assignableRoles: data.assignableRoles || [],
+        rolesRequiringAreaType: data.rolesRequiringAreaType || [],
+        rolesRequiringUnionSelection: data.rolesRequiringUnionSelection || [],
+        defaultCreateRole: data.defaultCreateRole || null,
+      });
+
+      setForm((previous) => ({
+        ...previous,
+        role: data.defaultCreateRole || data.assignableRoles?.[0] || previous.role || '',
+      }));
+    } catch (requestError) {
+      toast.error(requestError?.response?.data?.message || 'Failed to load role metadata.');
+    } finally {
+      setIsMetaLoading(false);
+    }
+  };
 
   const loadUsers = async () => {
     setIsLoading(true);
@@ -118,8 +104,20 @@ export const RoleManagementPage = () => {
   };
 
   useEffect(() => {
+    loadManagementMeta();
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    if (!managementMeta.defaultCreateRole) {
+      return;
+    }
+
+    setForm((previous) => ({
+      ...previous,
+      role: previous.role || managementMeta.defaultCreateRole,
+    }));
+  }, [managementMeta.defaultCreateRole]);
 
   const handleCreateChange = (field) => (event) => {
     setForm((previous) => ({ ...previous, [field]: event.target.value }));
@@ -161,12 +159,14 @@ export const RoleManagementPage = () => {
       return;
     }
 
-    if ((form.role === 'union_leader' || form.role === 'ward_admin' || form.role === 'donor' || form.role === 'finder') && !form.areaType) {
+    const needsAreaType = (managementMeta.rolesRequiringAreaType || []).includes(form.role);
+    if (needsAreaType && !form.areaType) {
       toast.error('Please select a union or pouroshava area type.');
       return;
     }
 
-    if ((form.role === 'union_leader' || form.role === 'ward_admin' || form.role === 'donor' || form.role === 'finder') && !form.unionId && !form.unionName) {
+    const needsUnionSelection = (managementMeta.rolesRequiringUnionSelection || []).includes(form.role);
+    if (needsUnionSelection && !form.unionId && !form.unionName) {
       toast.error('Please select a union or enter a union name.');
       return;
     }
@@ -225,7 +225,7 @@ export const RoleManagementPage = () => {
       </header>
 
       <div className="panel-grid">
-        {ROLE_DEFINITIONS.map((item) => (
+        {(managementMeta.roles || []).map((item) => (
           <article className="panel-card" key={item.role}>
             <p className="eyebrow">{item.badge}</p>
             <h3>{item.title}</h3>
@@ -264,10 +264,14 @@ export const RoleManagementPage = () => {
           </div>
           <div className="home-filter-field">
             <label htmlFor="userRole">Role</label>
-            <select id="userRole" value={form.role} onChange={handleCreateChange('role')}>
-              {allowedRoles.map((role) => (
-                <option key={role} value={role}>{formatRoleLabel(role)}</option>
-              ))}
+            <select id="userRole" value={form.role} onChange={handleCreateChange('role')} disabled={isMetaLoading || allowedRoles.length === 0}>
+              {allowedRoles.length === 0 ? (
+                <option value="">No assignable roles</option>
+              ) : (
+                allowedRoles.map((role) => (
+                  <option key={role} value={role}>{formatRoleLabel(role)}</option>
+                ))
+              )}
             </select>
           </div>
           <div className="home-filter-field">
@@ -288,7 +292,7 @@ export const RoleManagementPage = () => {
             />
           </div>
           <div className="profile-full-width role-management-actions">
-            <button type="submit" disabled={isSubmitting} className="inline-link-btn">
+            <button type="submit" disabled={isSubmitting || isMetaLoading || allowedRoles.length === 0} className="inline-link-btn">
               {isSubmitting ? 'Creating...' : 'Create User'}
             </button>
           </div>

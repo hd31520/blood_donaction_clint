@@ -1,6 +1,10 @@
 import { apiClient } from './apiClient';
 
 export const userService = {
+  getUserManagementMeta: async () => {
+    const response = await apiClient.get('/users/meta');
+    return response.data;
+  },
   getUsers: async () => {
     const response = await apiClient.get('/users');
     return response.data;
