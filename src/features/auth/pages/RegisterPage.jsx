@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { getAuthErrorMessage } from '../utils/authErrorMessage.js';
 import { getRoleDefaultPath } from '../utils/roleRedirect.js';
 
 export const RegisterPage = () => {
@@ -103,14 +104,13 @@ export const RegisterPage = () => {
       const status = requestError?.response?.status;
       const hasResponse = Boolean(requestError?.response);
       const isTimeout = requestError?.code === 'ECONNABORTED';
-      const isServiceUnavailable = status === 503;
-      const errorMessage = hasResponse
-        ? isServiceUnavailable
-          ? serverMessage || 'Server is temporarily unavailable. Please try again in a few seconds.'
-          : serverMessage || 'Registration failed due to server validation.'
-        : isTimeout
-          ? 'Registration is taking too long. Server may be waking up, please try again in a few seconds.'
-          : 'Registration failed: network/CORS issue. Please check internet and try again.';
+      const errorMessage = getAuthErrorMessage({
+        mode: 'register',
+        status,
+        serverMessage,
+        hasResponse,
+        isTimeout,
+      });
 
       console.error('[AUTH_UI][REGISTER_FAILED]', {
         message: requestError?.message,

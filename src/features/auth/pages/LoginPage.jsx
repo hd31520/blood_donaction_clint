@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext.jsx';
+import { getAuthErrorMessage } from '../utils/authErrorMessage.js';
 import { getRoleDefaultPath } from '../utils/roleRedirect.js';
 
 export const LoginPage = () => {
@@ -31,14 +32,13 @@ export const LoginPage = () => {
       const status = requestError?.response?.status;
       const hasResponse = Boolean(requestError?.response);
       const isTimeout = requestError?.code === 'ECONNABORTED';
-      const isServiceUnavailable = status === 503;
-      const errorMessage = hasResponse
-        ? isServiceUnavailable
-          ? serverMessage || 'Server is temporarily unavailable. Please try again in a few seconds.'
-          : serverMessage || 'Login failed. Please check your credentials.'
-        : isTimeout
-          ? 'Login is taking too long. Server may be waking up, please try again in a few seconds.'
-          : 'Login failed: network/CORS issue. Please check internet and try again.';
+      const errorMessage = getAuthErrorMessage({
+        mode: 'login',
+        status,
+        serverMessage,
+        hasResponse,
+        isTimeout,
+      });
 
       console.error('[AUTH_UI][LOGIN_FAILED]', {
         message: requestError?.message,
