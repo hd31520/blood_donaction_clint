@@ -28,10 +28,14 @@ export const LoginPage = () => {
       navigate(nextPath, { replace: true });
     } catch (requestError) {
       const serverMessage = requestError?.response?.data?.message;
+      const status = requestError?.response?.status;
       const hasResponse = Boolean(requestError?.response);
       const isTimeout = requestError?.code === 'ECONNABORTED';
+      const isServiceUnavailable = status === 503;
       const errorMessage = hasResponse
-        ? serverMessage || 'Login failed. Please check your credentials.'
+        ? isServiceUnavailable
+          ? serverMessage || 'Server is temporarily unavailable. Please try again in a few seconds.'
+          : serverMessage || 'Login failed. Please check your credentials.'
         : isTimeout
           ? 'Login is taking too long. Server may be waking up, please try again in a few seconds.'
           : 'Login failed: network/CORS issue. Please check internet and try again.';

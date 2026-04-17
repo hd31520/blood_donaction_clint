@@ -100,10 +100,14 @@ export const RegisterPage = () => {
       navigate(getRoleDefaultPath(user?.role), { replace: true });
     } catch (requestError) {
       const serverMessage = requestError?.response?.data?.message;
+      const status = requestError?.response?.status;
       const hasResponse = Boolean(requestError?.response);
       const isTimeout = requestError?.code === 'ECONNABORTED';
+      const isServiceUnavailable = status === 503;
       const errorMessage = hasResponse
-        ? serverMessage || 'Registration failed due to server validation.'
+        ? isServiceUnavailable
+          ? serverMessage || 'Server is temporarily unavailable. Please try again in a few seconds.'
+          : serverMessage || 'Registration failed due to server validation.'
         : isTimeout
           ? 'Registration is taking too long. Server may be waking up, please try again in a few seconds.'
           : 'Registration failed: network/CORS issue. Please check internet and try again.';
