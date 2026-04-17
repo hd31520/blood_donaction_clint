@@ -147,21 +147,21 @@ export const ChatPage = () => {
 
       {error ? <p className="auth-error">{error}</p> : null}
 
-      <div className="panel-grid" style={{ gridTemplateColumns: 'minmax(260px, 340px) 1fr', gap: '1rem' }}>
-        <article className="panel-card">
+      <div className="panel-grid chat-layout">
+        <article className="panel-card chat-thread-panel">
           <h3>Conversations</h3>
           {isLoadingThreads ? <p className="muted-text">Loading threads...</p> : null}
-          <ul className="list-clean">
+          <ul className="list-clean chat-thread-list">
             {threads.map((thread) => (
-              <li key={thread.id}>
+              <li key={thread.id} className="chat-thread-item">
                 <button
                   type="button"
-                  className={`inline-link-btn ${String(thread.id) === String(activeThreadId) ? 'active' : ''}`}
+                  className={`inline-link-btn chat-thread-btn ${String(thread.id) === String(activeThreadId) ? 'active' : ''}`}
                   onClick={() => setActiveThreadId(String(thread.id))}
                 >
                   {thread.otherParticipant?.name || 'User'}
                 </button>
-                <p className="muted-text">{thread.lastMessagePreview || 'No messages yet'}</p>
+                <p className="muted-text chat-thread-preview">{thread.lastMessagePreview || 'No messages yet'}</p>
               </li>
             ))}
           </ul>
@@ -170,10 +170,10 @@ export const ChatPage = () => {
           ) : null}
         </article>
 
-        <article className="panel-card">
+        <article className="panel-card chat-messages-panel">
           <h3>{activeThread ? `Chat with ${activeThread.otherParticipant?.name || 'User'}` : 'Messages'}</h3>
 
-          <div style={{ minHeight: '320px', maxHeight: '420px', overflowY: 'auto', padding: '0.5rem 0' }}>
+          <div className="chat-message-scroll">
             {isLoadingMessages ? <p className="muted-text">Loading messages...</p> : null}
 
             {!isLoadingMessages && messages.length === 0 ? (
@@ -184,18 +184,10 @@ export const ChatPage = () => {
               const isMine = String(message.senderUserId) === String(user?.id || user?._id || '');
 
               return (
-                <div key={message.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start', marginBottom: '0.5rem' }}>
-                  <div
-                    style={{
-                      maxWidth: '80%',
-                      padding: '0.6rem 0.8rem',
-                      borderRadius: '0.75rem',
-                      background: isMine ? 'var(--color-accent, #dc2626)' : 'rgba(255,255,255,0.08)',
-                      color: isMine ? '#fff' : 'inherit',
-                    }}
-                  >
+                <div key={message.id} className={`chat-message-row ${isMine ? 'mine' : 'other'}`}>
+                  <div className={`chat-message-bubble ${isMine ? 'mine' : 'other'}`}>
                     <p>{message.content}</p>
-                    <p className="muted-text" style={{ marginTop: '0.35rem' }}>
+                    <p className="muted-text chat-message-meta">
                       {message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}
                     </p>
                   </div>
@@ -204,16 +196,17 @@ export const ChatPage = () => {
             })}
           </div>
 
-          <form onSubmit={handleSendMessage} className="toolbar" style={{ marginTop: '0.75rem' }}>
-            <label htmlFor="chatMessage">Message</label>
+          <form onSubmit={handleSendMessage} className="toolbar chat-composer">
+            <label htmlFor="chatMessage" className="chat-composer-label">Message</label>
             <input
               id="chatMessage"
+              className="chat-composer-input"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder={activeThreadId ? 'Type a message' : 'Select a conversation'}
               disabled={!activeThreadId || isSending}
             />
-            <button type="submit" className="inline-link-btn" disabled={!activeThreadId || !draft.trim() || isSending}>
+            <button type="submit" className="inline-link-btn chat-send-btn" disabled={!activeThreadId || !draft.trim() || isSending}>
               {isSending ? 'Sending...' : 'Send'}
             </button>
           </form>
