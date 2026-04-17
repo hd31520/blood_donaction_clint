@@ -32,6 +32,8 @@ const pendingRequests = {
   pouroshavasByUpazila: new Map(),
 };
 
+const EXPECTED_DIVISION_COUNT = 8;
+
 const withPublicDatasetFallback = async ({ apiLoader, publicLoader, fallbackMessage, requestSeq, currentSeqRef, onFallback }) => {
   try {
     const apiData = await apiLoader();
@@ -165,8 +167,20 @@ export const useLocationCascade = () => {
         requestSeq: 0,
         currentSeqRef: districtRequestSeqRef,
       });
-      locationStateCache.divisions = data;
-      setDivisions(data);
+
+      let finalDivisions = data;
+      if (Array.isArray(data) && data.length > 0 && data.length < EXPECTED_DIVISION_COUNT) {
+        const publicDivisions = await getPublicDivisions();
+        if (Array.isArray(publicDivisions) && publicDivisions.length >= EXPECTED_DIVISION_COUNT) {
+          console.warn(
+            'Division API list is incomplete. Using public Bangladesh location dataset instead.',
+          );
+          finalDivisions = publicDivisions;
+        }
+      }
+
+      locationStateCache.divisions = finalDivisions;
+      setDivisions(finalDivisions);
     } catch (err) {
       setError(getErrorMessage('Failed to load divisions', err));
       console.error('Error loading divisions:', err);
