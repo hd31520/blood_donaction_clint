@@ -12,6 +12,11 @@ export const AppProviders = () => {
   const watermarkPosition = import.meta.env.VITE_WATERMARK_POSITION || 'bottom-right';
   const watermarkOpacity = Number(import.meta.env.VITE_WATERMARK_OPACITY || 0.08);
   const watermarkColor = import.meta.env.VITE_WATERMARK_COLOR || '#7a8b84';
+  const watermarkImageUrl =
+    import.meta.env.VITE_WATERMARK_IMAGE_URL ||
+    'https://i.ibb.co.com/wFxJ4MSV/Chat-GPT-Image-Aug-15-2025-01-06-52-AM.png';
+  const watermarkLinkUrl =
+    import.meta.env.VITE_WATERMARK_LINK_URL || 'https://hridoy-portfilio.vercel.app/';
 
   return (
     <BrowserRouter
@@ -30,6 +35,8 @@ export const AppProviders = () => {
             position={watermarkPosition}
             opacity={watermarkOpacity}
             color={watermarkColor}
+            imageUrl={watermarkImageUrl}
+            linkUrl={watermarkLinkUrl}
           />
         </NotificationProvider>
       </AuthProvider>

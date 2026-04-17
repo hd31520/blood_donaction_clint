@@ -12,23 +12,41 @@ export const GlobalWatermark = ({
   position = 'bottom-right',
   opacity = 0.08,
   color = '#7a8b84',
+  imageUrl = 'https://i.ibb.co.com/wFxJ4MSV/Chat-GPT-Image-Aug-15-2025-01-06-52-AM.png',
+  linkUrl = 'https://hridoy-portfilio.vercel.app/',
+  imageSize = 88,
+  imageBlur = 2.5,
 }) => {
   const positionClass = positionClassMap[position] || positionClassMap['bottom-right'];
 
   return (
-    <div
+    <a
       className={`global-watermark ${positionClass}`}
+      href={linkUrl}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`${brandText || 'Watermark'} portfolio link`}
+      title={linkUrl}
       style={{
         opacity,
         color,
       }}
-      aria-hidden="true"
     >
-      <div className="wm-mark">+</div>
-      <div className="wm-text-block">
-        <p className="wm-brand">{brandText}</p>
-        <p className="wm-tagline">{tagline}</p>
-      </div>
-    </div>
+      <span
+        className="wm-image-shell"
+        style={{
+          width: `${imageSize}px`,
+          height: `${imageSize}px`,
+          filter: `blur(${imageBlur}px)`,
+        }}
+      >
+        <img className="wm-image" src={imageUrl} alt="" aria-hidden="true" />
+      </span>
+
+      <span className="wm-text-block">
+        <span className="wm-brand">{brandText}</span>
+        <span className="wm-tagline">{tagline}</span>
+      </span>
+    </a>
   );
 };
