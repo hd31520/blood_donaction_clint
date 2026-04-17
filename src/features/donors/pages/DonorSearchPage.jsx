@@ -136,7 +136,7 @@ export const DonorSearchPage = () => {
       {error ? <p className="auth-error">{error}</p> : null}
       {isLoading ? <p className="page-loader">Loading donors...</p> : null}
 
-      <div className="table-card">
+      <div className="table-card donor-table-card">
         <table>
           <thead>
             <tr>
@@ -151,9 +151,9 @@ export const DonorSearchPage = () => {
           <tbody>
             {results.map((donorProfile) => (
               <tr key={donorProfile.id}>
-                <td>{donorProfile.donor?.name || 'N/A'}</td>
-                <td>{donorProfile.bloodGroup}</td>
-                <td>
+                <td data-label="Name">{donorProfile.donor?.name || 'N/A'}</td>
+                <td data-label="Blood Group">{donorProfile.bloodGroup}</td>
+                <td data-label="Location">
                   {donorProfile.donor?.locationNames
                     ? [
                         donorProfile.donor.locationNames.division,
@@ -165,13 +165,13 @@ export const DonorSearchPage = () => {
                         .join(' / ')
                     : donorProfile.donor?.location || 'N/A'}
                 </td>
-                <td>
+                <td data-label="Status">
                   <span className={`status-chip ${donorProfile.availabilityStatus}`}>
                     {donorProfile.availabilityStatus}
                   </span>
                 </td>
-                <td>{donorProfile.donor?.phone || 'Hidden'}</td>
-                <td>
+                <td data-label="Contact">{donorProfile.donor?.phone || 'Hidden'}</td>
+                <td data-label="Chat">
                   {donorProfile.donor?.contactPreferences?.allowDonorChat !== false && donorProfile.donor?.phone ? (
                     <Link
                       className="inline-link-btn"

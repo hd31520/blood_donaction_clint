@@ -234,7 +234,7 @@ export const RoleManagementPage = () => {
         ))}
       </div>
 
-      <article className="panel-card" style={{ marginTop: '1rem' }}>
+      <article className="panel-card role-management-section">
         <h3>Create User</h3>
         <form className="profile-form-grid" onSubmit={submitCreateUser}>
           <div className="home-filter-field">
@@ -287,7 +287,7 @@ export const RoleManagementPage = () => {
               onChange={handleCreateLocationChange}
             />
           </div>
-          <div className="profile-full-width" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="profile-full-width role-management-actions">
             <button type="submit" disabled={isSubmitting} className="inline-link-btn">
               {isSubmitting ? 'Creating...' : 'Create User'}
             </button>
@@ -295,11 +295,11 @@ export const RoleManagementPage = () => {
         </form>
       </article>
 
-      <article className="panel-card" style={{ marginTop: '1rem' }}>
+      <article className="panel-card role-management-section">
         <h3>Scoped Users</h3>
         {isLoading ? <p className="muted-text">Loading users...</p> : null}
         {error ? <p className="auth-error">{error}</p> : null}
-        <div className="table-card" style={{ marginTop: '0.75rem' }}>
+        <div className="table-card role-management-table-card">
           <table>
             <thead>
               <tr>
@@ -314,15 +314,15 @@ export const RoleManagementPage = () => {
             <tbody>
               {users.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>{formatRoleLabel(item.role)}</td>
-                  <td>
+                  <td data-label="Name">{item.name}</td>
+                  <td data-label="Email">{item.email}</td>
+                  <td data-label="Role">{formatRoleLabel(item.role)}</td>
+                  <td data-label="Location">
                     {[item.locationNames?.division, item.locationNames?.district, item.locationNames?.upazila, item.locationNames?.union]
                       .filter(Boolean)
                       .join(' / ') || 'N/A'}
                   </td>
-                  <td>
+                  <td data-label="Change Role">
                     <select
                       value={roleDrafts[item.id] || item.role}
                       onChange={(event) =>
@@ -337,7 +337,7 @@ export const RoleManagementPage = () => {
                       ))}
                     </select>
                   </td>
-                  <td>
+                  <td data-label="Action">
                     <button type="button" className="inline-link-btn" onClick={() => submitRoleUpdate(item.id)}>
                       Save Role
                     </button>

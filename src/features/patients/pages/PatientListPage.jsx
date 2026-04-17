@@ -492,11 +492,11 @@ export const PatientListPage = () => {
           <tbody>
             {results.map((patient) => (
               <tr key={patient.id}>
-                <td>{patient.patientName}</td>
-                <td>{patient.bloodGroup}</td>
-                <td>{patient.unitsReceived}/{patient.unitsRequired}</td>
-                <td>{patient.hospital?.name || patient.hospitalName || 'N/A'}</td>
-                <td>
+                <td data-label="Patient">{patient.patientName}</td>
+                <td data-label="Blood Group">{patient.bloodGroup}</td>
+                <td data-label="Need">{patient.unitsReceived}/{patient.unitsRequired}</td>
+                <td data-label="Hospital">{patient.hospital?.name || patient.hospitalName || 'N/A'}</td>
+                <td data-label="Location">
                   {[
                     patient.locationNames?.division,
                     patient.locationNames?.district,
@@ -507,11 +507,11 @@ export const PatientListPage = () => {
                     .filter(Boolean)
                     .join(' / ') || 'N/A'}
                 </td>
-                <td>
+                <td data-label="Status">
                   <span className={`status-chip ${patient.status}`}>{patient.status}</span>
                 </td>
-                <td>{patient.contactPhone || 'N/A'}</td>
-                <td>
+                <td data-label="Contact">{patient.contactPhone || 'N/A'}</td>
+                <td data-label="Chat">
                   {canUsePatientChat && patient.requestedBy?.id ? (
                     <Link
                       className="inline-link-btn"

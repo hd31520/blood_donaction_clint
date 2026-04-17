@@ -1496,7 +1496,7 @@ body {
 }
 
 .patient-table-card table {
-  min-width: 760px;
+  min-width: 100%;
 }
 
 .patient-table-card td {
@@ -1506,6 +1506,19 @@ body {
 .role-selector-toolbar {
   margin-top: 0.8rem;
   margin-bottom: 0.2rem;
+}
+
+.role-management-section {
+  margin-top: 1rem;
+}
+
+.role-management-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.role-management-table-card {
+  margin-top: 0.75rem;
 }
 
 .mini-chart {
@@ -1783,6 +1796,192 @@ button:hover {
   .donor-grid,
   .profile-top-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .feature-page {
+    overflow-x: hidden;
+  }
+
+  .panel-card,
+  .stat-card,
+  .hero-card,
+  .home-hero-main,
+  .home-hero-side,
+  .home-filter-panel,
+  .home-donor-grid-wrap,
+  .home-priority-section,
+  .home-cta-section,
+  .home-footer {
+    padding: 0.8rem;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.45rem;
+  }
+
+  .toolbar input,
+  .toolbar select,
+  .toolbar button,
+  .toolbar .inline-link-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.8rem 0.8rem 0;
+  }
+
+  .mobile-header > div {
+    order: 3;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .mobile-header h2 {
+    font-size: 1.02rem;
+  }
+
+  .mobile-header .inline-link-btn {
+    padding: 0.45rem 0.72rem;
+    font-size: 0.8rem;
+  }
+
+  .mini-chart {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    height: 160px;
+  }
+
+  .mini-chart-bar-wrap {
+    height: 120px;
+  }
+
+  .table-card {
+    overflow: visible;
+  }
+
+  .table-card table,
+  .patient-table-card table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+  }
+
+  .table-card thead,
+  .patient-table-card thead {
+    display: none;
+  }
+
+  .table-card tbody,
+  .patient-table-card tbody,
+  .table-card tr,
+  .patient-table-card tr,
+  .table-card td,
+  .patient-table-card td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-card tr,
+  .patient-table-card tr {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 0.65rem;
+    padding: 0.2rem 0;
+  }
+
+  .table-card td,
+  .patient-table-card td {
+    border-bottom: 0;
+    padding: 0.42rem 0.62rem;
+    word-break: break-word;
+  }
+
+  .table-card td[data-label]::before,
+  .patient-table-card td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .table-card td[colspan]::before,
+  .patient-table-card td[colspan]::before {
+    content: none;
+  }
+
+  .table-card td .inline-link-btn,
+  .patient-table-card td .inline-link-btn,
+  .table-card td select,
+  .patient-table-card td select {
+    width: 100%;
+  }
+
+  .role-management-actions {
+    justify-content: stretch;
+  }
+
+  .role-management-actions .inline-link-btn {
+    width: 100%;
+  }
+
+  .chat-message-bubble {
+    max-width: 92%;
+  }
+
+  .location-select-wrapper label {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .area-type-toggle-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-content {
+    padding: 0.8rem;
+  }
+
+  .feature-header h2 {
+    font-size: 1.22rem;
+  }
+
+  .inline-link-btn,
+  button {
+    padding: 0.56rem 0.85rem;
+    font-size: 0.84rem;
+  }
+
+  .mini-chart {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .chat-message-scroll {
+    min-height: 220px;
+    max-height: 44vh;
+  }
+
+  .home-filter-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .home-pagination {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -2081,7 +2280,7 @@ button:hover {
   }
 
   .patient-table-card table {
-    min-width: 680px;
+    min-width: 100%;
   }
 }
 
