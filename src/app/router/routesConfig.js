@@ -1,4 +1,4 @@
-import { Home, Search, BarChart3, Users, UserCircle2, ClipboardList } from 'lucide-react';
+import { Home, Search, BarChart3, Users, UserCircle2, ClipboardList, MessageCircle } from 'lucide-react';
 
 export const appRoutes = [
   {
@@ -20,6 +20,13 @@ export const appRoutes = [
     label: 'Patient List',
     path: '/patients',
     icon: ClipboardList,
+    roles: ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder'],
+  },
+  {
+    key: 'chat',
+    label: 'Chat',
+    path: '/chat',
+    icon: MessageCircle,
     roles: ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'donor', 'finder'],
   },
   {

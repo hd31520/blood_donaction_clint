@@ -101,4 +101,14 @@ export const donorSearchService = {
 
     return response.data?.data || null;
   },
+
+  getMyProfile: async () => {
+    const response = await apiClient.get('/donor-profiles/me');
+    return response.data?.data || null;
+  },
+
+  updateMyProfile: async (payload) => {
+    const response = await apiClient.put('/donor-profiles/me', payload);
+    return response.data?.data || null;
+  },
 };

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { donorSearchService } from '../services/donorSearchService.js';
@@ -144,6 +145,7 @@ export const DonorSearchPage = () => {
               <th>Location</th>
               <th>Status</th>
               <th>Contact</th>
+              <th>Chat</th>
             </tr>
           </thead>
           <tbody>
@@ -168,12 +170,24 @@ export const DonorSearchPage = () => {
                     {donorProfile.availabilityStatus}
                   </span>
                 </td>
-                <td>{donorProfile.donor?.phone || 'N/A'}</td>
+                <td>{donorProfile.donor?.phone || 'Hidden'}</td>
+                <td>
+                  {donorProfile.donor?.contactPreferences?.allowDonorChat !== false && donorProfile.donor?.phone ? (
+                    <Link
+                      className="inline-link-btn"
+                      to={`/chat?targetUserId=${encodeURIComponent(String(donorProfile.userId || ''))}`}
+                    >
+                      Chat
+                    </Link>
+                  ) : (
+                    <span className="muted-text">Not available</span>
+                  )}
+                </td>
               </tr>
             ))}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={5}>No donors found for selected filters.</td>
+                <td colSpan={6}>No donors found for selected filters.</td>
               </tr>
             ) : null}
           </tbody>

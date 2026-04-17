@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 
 import { useAuth } from '../../auth/context/AuthContext.jsx';
 import { authService } from '../../auth/services/authService.js';
+import { donorSearchService } from '../../donors/services/donorSearchService.js';
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -23,6 +24,14 @@ export const ProfilePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [donorPreferences, setDonorPreferences] = useState({
+    bloodGroup: '',
+    lastDonationDate: '',
+    availabilityStatus: 'available',
+    isPhoneVisible: true,
+    allowDonorChat: true,
+    allowPatientChat: true,
+  });
 
   useEffect(() => {
     if (!user) {
@@ -36,6 +45,48 @@ export const ProfilePage = () => {
       imgbbApiKey: window.localStorage.getItem('imgbbApiKey') || '',
     });
     setPreviewUrl(user.profileImageUrl || '');
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'donor') {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadDonorPreferences = async () => {
+      try {
+        const donorProfile = await donorSearchService.getMyProfile();
+
+        if (!isMounted || !donorProfile) {
+          return;
+        }
+
+        setDonorPreferences({
+          bloodGroup: donorProfile.bloodGroup || user.bloodGroup || 'A+',
+          lastDonationDate: donorProfile.lastDonationDate
+            ? new Date(donorProfile.lastDonationDate).toISOString().slice(0, 10)
+            : '',
+          availabilityStatus: donorProfile.availabilityStatus || 'available',
+          isPhoneVisible: donorProfile.isPhoneVisible !== false,
+          allowDonorChat: donorProfile.allowDonorChat !== false,
+          allowPatientChat: donorProfile.allowPatientChat !== false,
+        });
+      } catch {
+        if (isMounted) {
+          setDonorPreferences((previous) => ({
+            ...previous,
+            bloodGroup: user.bloodGroup || previous.bloodGroup || 'A+',
+          }));
+        }
+      }
+    };
+
+    loadDonorPreferences();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const handleChange = (field) => (event) => {
@@ -81,6 +132,17 @@ export const ProfilePage = () => {
         phone: formData.phone,
         location: formData.location,
       });
+
+      if (user?.role === 'donor') {
+        await donorSearchService.updateMyProfile({
+          bloodGroup: donorPreferences.bloodGroup,
+          lastDonationDate: donorPreferences.lastDonationDate || undefined,
+          availabilityStatus: donorPreferences.availabilityStatus,
+          isPhoneVisible: donorPreferences.isPhoneVisible,
+          allowDonorChat: donorPreferences.allowDonorChat,
+          allowPatientChat: donorPreferences.allowPatientChat,
+        });
+      }
 
       if (selectedFile) {
         await uploadImage();
@@ -138,6 +200,117 @@ export const ProfilePage = () => {
                 onChange={handleChange('location')}
               />
             </div>
+
+            {user?.role === 'donor' ? (
+              <>
+                <div className="home-filter-field">
+                  <label htmlFor="donorBloodGroup">Blood Group</label>
+                  <select
+                    id="donorBloodGroup"
+                    value={donorPreferences.bloodGroup}
+                    onChange={(event) =>
+                      setDonorPreferences((previous) => ({
+                        ...previous,
+                        bloodGroup: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div className="home-filter-field">
+                  <label htmlFor="lastDonationDate">Last Donation Date</label>
+                  <input
+                    id="lastDonationDate"
+                    type="date"
+                    value={donorPreferences.lastDonationDate}
+                    onChange={(event) =>
+                      setDonorPreferences((previous) => ({
+                        ...previous,
+                        lastDonationDate: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="home-filter-field profile-full-width">
+                  <label htmlFor="availabilityStatus">Available For Donation</label>
+                  <select
+                    id="availabilityStatus"
+                    value={donorPreferences.availabilityStatus}
+                    onChange={(event) =>
+                      setDonorPreferences((previous) => ({
+                        ...previous,
+                        availabilityStatus: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="available">Available</option>
+                    <option value="temporarily_unavailable">Temporarily Unavailable</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                </div>
+
+                <div className="home-filter-field profile-full-width">
+                  <label htmlFor="isPhoneVisible">
+                    <input
+                      id="isPhoneVisible"
+                      type="checkbox"
+                      checked={donorPreferences.isPhoneVisible}
+                      onChange={(event) =>
+                        setDonorPreferences((previous) => ({
+                          ...previous,
+                          isPhoneVisible: event.target.checked,
+                        }))
+                      }
+                    />{' '}
+                    Show my phone number to others
+                  </label>
+                </div>
+
+                <div className="home-filter-field profile-full-width">
+                  <label htmlFor="allowDonorChat">
+                    <input
+                      id="allowDonorChat"
+                      type="checkbox"
+                      checked={donorPreferences.allowDonorChat}
+                      onChange={(event) =>
+                        setDonorPreferences((previous) => ({
+                          ...previous,
+                          allowDonorChat: event.target.checked,
+                        }))
+                      }
+                    />{' '}
+                    Allow chat from donor list
+                  </label>
+                </div>
+
+                <div className="home-filter-field profile-full-width">
+                  <label htmlFor="allowPatientChat">
+                    <input
+                      id="allowPatientChat"
+                      type="checkbox"
+                      checked={donorPreferences.allowPatientChat}
+                      onChange={(event) =>
+                        setDonorPreferences((previous) => ({
+                          ...previous,
+                          allowPatientChat: event.target.checked,
+                        }))
+                      }
+                    />{' '}
+                    Show chat option in patient list
+                  </label>
+                </div>
+              </>
+            ) : null}
 
             <div className="home-filter-field profile-full-width">
               <label htmlFor="profileImage">Profile Image</label>

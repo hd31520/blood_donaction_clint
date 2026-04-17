@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
+import { useAuth } from '../../auth/context/AuthContext.jsx';
+import { donorSearchService } from '../../donors/services/donorSearchService.js';
 import { patientService } from '../services/patientService.js';
 
 const STATUS_OPTIONS = ['pending', 'in_progress', 'fulfilled', 'cancelled'];
@@ -12,6 +15,7 @@ const MEDICAL_CONDITION_OPTIONS = [
 ];
 
 export const PatientListPage = () => {
+  const { user } = useAuth();
   const [patientName, setPatientName] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [status, setStatus] = useState('');
@@ -52,6 +56,9 @@ export const PatientListPage = () => {
     unionId: '',
     areaName: '',
   });
+  const [allowPatientChat, setAllowPatientChat] = useState(false);
+
+  const canUsePatientChat = user?.role === 'donor' && allowPatientChat;
 
   const searchFilters = useMemo(
     () => ({
@@ -73,6 +80,34 @@ export const PatientListPage = () => {
       locationFilters.upazilaId,
     ],
   );
+
+  useEffect(() => {
+    if (user?.role !== 'donor') {
+      setAllowPatientChat(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadDonorChatPreference = async () => {
+      try {
+        const profile = await donorSearchService.getMyProfile();
+        if (isMounted) {
+          setAllowPatientChat(profile?.allowPatientChat !== false);
+        }
+      } catch {
+        if (isMounted) {
+          setAllowPatientChat(false);
+        }
+      }
+    };
+
+    loadDonorChatPreference();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.role]);
 
   useEffect(() => {
     const timer = window.setTimeout(async () => {
@@ -450,6 +485,8 @@ export const PatientListPage = () => {
               <th>Hospital</th>
               <th>Location</th>
               <th>Status</th>
+              <th>Contact</th>
+              <th>Chat</th>
             </tr>
           </thead>
           <tbody>
@@ -473,11 +510,24 @@ export const PatientListPage = () => {
                 <td>
                   <span className={`status-chip ${patient.status}`}>{patient.status}</span>
                 </td>
+                <td>{patient.contactPhone || 'N/A'}</td>
+                <td>
+                  {canUsePatientChat && patient.requestedBy?.id ? (
+                    <Link
+                      className="inline-link-btn"
+                      to={`/chat?targetUserId=${encodeURIComponent(String(patient.requestedBy.id))}&patientId=${encodeURIComponent(String(patient.id))}`}
+                    >
+                      Chat
+                    </Link>
+                  ) : (
+                    <span className="muted-text">Not available</span>
+                  )}
+                </td>
               </tr>
             ))}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={6}>No patients found for selected filters.</td>
+                <td colSpan={8}>No patients found for selected filters.</td>
               </tr>
             ) : null}
           </tbody>
