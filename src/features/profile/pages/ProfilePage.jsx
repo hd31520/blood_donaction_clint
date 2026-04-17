@@ -33,6 +33,53 @@ export const ProfilePage = () => {
     allowPatientChat: true,
   });
 
+  const donorEligibility = useMemo(() => {
+    if (!donorPreferences.lastDonationDate) {
+      return {
+        isEligibleForDonation: true,
+        nextEligibleDonationDate: null,
+        daysUntilEligible: 0,
+      };
+    }
+
+    const lastDate = new Date(donorPreferences.lastDonationDate);
+    const nextEligibleDate = new Date(lastDate.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfNext = new Date(
+      nextEligibleDate.getFullYear(),
+      nextEligibleDate.getMonth(),
+      nextEligibleDate.getDate(),
+    );
+    const daysUntilEligible = Math.max(
+      0,
+      Math.ceil((startOfNext.getTime() - startOfToday.getTime()) / (24 * 60 * 60 * 1000)),
+    );
+
+    return {
+      isEligibleForDonation: daysUntilEligible <= 0,
+      nextEligibleDonationDate: startOfNext,
+      daysUntilEligible,
+    };
+  }, [donorPreferences.lastDonationDate]);
+
+  useEffect(() => {
+    if (user?.role !== 'donor') {
+      return;
+    }
+
+    if (!donorEligibility.isEligibleForDonation && donorPreferences.availabilityStatus === 'available') {
+      setDonorPreferences((previous) => ({
+        ...previous,
+        availabilityStatus: 'temporarily_unavailable',
+      }));
+    }
+  }, [
+    user?.role,
+    donorEligibility.isEligibleForDonation,
+    donorPreferences.availabilityStatus,
+  ]);
+
   useEffect(() => {
     if (!user) {
       return;
@@ -253,10 +300,22 @@ export const ProfilePage = () => {
                       }))
                     }
                   >
-                    <option value="available">Available</option>
+                    <option value="available" disabled={!donorEligibility.isEligibleForDonation}>
+                      Available
+                    </option>
                     <option value="temporarily_unavailable">Temporarily Unavailable</option>
                     <option value="unavailable">Unavailable</option>
                   </select>
+                  {!donorEligibility.isEligibleForDonation ? (
+                    <p className="muted-text" style={{ marginTop: '0.35rem' }}>
+                      Donation unlocks after{' '}
+                      {donorEligibility.nextEligibleDonationDate
+                        ? donorEligibility.nextEligibleDonationDate.toLocaleDateString()
+                        : '90 days'}{' '}
+                      ({donorEligibility.daysUntilEligible} day
+                      {donorEligibility.daysUntilEligible === 1 ? '' : 's'} left).
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="home-filter-field profile-full-width">
