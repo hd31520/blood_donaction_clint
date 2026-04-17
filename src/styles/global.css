@@ -39,19 +39,20 @@ body {
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0;
   user-select: none;
   text-decoration: none;
   pointer-events: auto;
+  line-height: 0;
 }
 
 .wm-image-shell {
   display: block;
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 18px 35px rgba(16, 27, 27, 0.18);
-  background: rgba(255, 255, 255, 0.55);
+  border-radius: 6px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 
 .wm-image {
@@ -102,13 +103,13 @@ body {
 }
 
 .wm-bottom-left {
-  bottom: 1rem;
-  left: 1rem;
+  bottom: 0.2rem;
+  left: 0.2rem;
 }
 
 .wm-bottom-right {
-  bottom: 1rem;
-  right: 1rem;
+  bottom: 0.2rem;
+  right: 0.2rem;
 }
 
 .wm-center {
@@ -1928,7 +1929,7 @@ button:hover {
   }
 
   .global-watermark {
-    bottom: 5rem;
+    bottom: 0.2rem;
     right: 0.8rem;
     left: auto;
     top: auto;
@@ -2010,7 +2011,7 @@ button:hover {
 }
 
 .global-watermark {
-  bottom: 5rem;
+  bottom: 0.2rem;
   right: 0.8rem;
   left: auto;
   top: auto;
@@ -2069,7 +2070,7 @@ button:hover {
   }
 
   .global-watermark {
-    bottom: 1rem;
-    right: 1rem;
+    bottom: 0.2rem;
+    right: 0.2rem;
   }
 }

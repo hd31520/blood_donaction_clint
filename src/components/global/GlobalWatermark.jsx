@@ -14,8 +14,8 @@ export const GlobalWatermark = ({
   color = '#7a8b84',
   imageUrl = 'https://i.ibb.co.com/wFxJ4MSV/Chat-GPT-Image-Aug-15-2025-01-06-52-AM.png',
   linkUrl = 'https://hridoy-portfilio.vercel.app/',
-  imageSize = 88,
-  imageBlur = 2.5,
+  imageSize = 26,
+  imageBlur = 0,
 }) => {
   const positionClass = positionClassMap[position] || positionClassMap['bottom-right'];
 
@@ -43,10 +43,12 @@ export const GlobalWatermark = ({
         <img className="wm-image" src={imageUrl} alt="" aria-hidden="true" />
       </span>
 
-      <span className="wm-text-block">
-        <span className="wm-brand">{brandText}</span>
-        <span className="wm-tagline">{tagline}</span>
-      </span>
+      {brandText || tagline ? (
+        <span className="wm-text-block">
+          {brandText ? <span className="wm-brand">{brandText}</span> : null}
+          {tagline ? <span className="wm-tagline">{tagline}</span> : null}
+        </span>
+      ) : null}
     </a>
   );
 };

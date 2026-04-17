@@ -7,8 +7,8 @@ import { NotificationProvider } from '../../features/notifications/context/Notif
 import { AppRouter } from '../router/AppRouter.jsx';
 
 export const AppProviders = () => {
-  const watermarkText = import.meta.env.VITE_WATERMARK_TEXT || import.meta.env.VITE_APP_NAME;
-  const watermarkTagline = import.meta.env.VITE_WATERMARK_TAGLINE || 'Donate blood save lives';
+  const watermarkText = import.meta.env.VITE_WATERMARK_TEXT || '';
+  const watermarkTagline = import.meta.env.VITE_WATERMARK_TAGLINE || '';
   const watermarkPosition = import.meta.env.VITE_WATERMARK_POSITION || 'bottom-right';
   const watermarkOpacity = Number(import.meta.env.VITE_WATERMARK_OPACITY || 0.08);
   const watermarkColor = import.meta.env.VITE_WATERMARK_COLOR || '#7a8b84';
