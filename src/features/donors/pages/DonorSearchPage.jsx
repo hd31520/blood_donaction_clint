@@ -11,6 +11,35 @@ const AVAILABILITY_LABELS = {
   temporarily_unavailable: 'সাময়িক অনুপলব্ধ',
 };
 
+const formatDate = (value) => {
+  if (!value) {
+    return 'উল্লেখ নেই';
+  }
+
+  return new Date(value).toLocaleDateString('bn-BD', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+const getEligibilityLabel = (donorProfile) => {
+  if (donorProfile.isEligibleForDonation) {
+    return 'রক্তদানের জন্য উপযুক্ত';
+  }
+
+  const daysLeft = Number(donorProfile.daysUntilEligible || 0).toLocaleString('bn-BD');
+  return `${daysLeft} দিন পরে উপযুক্ত`;
+};
+
+const getResolvedAvailability = (donorProfile) => {
+  if (!donorProfile.isEligibleForDonation) {
+    return 'temporarily_unavailable';
+  }
+
+  return donorProfile.availabilityStatus || 'available';
+};
+
 export const DonorSearchPage = () => {
   const [bloodGroup, setBloodGroup] = useState('');
   const [availabilityStatus, setAvailabilityStatus] = useState('');
@@ -87,7 +116,7 @@ export const DonorSearchPage = () => {
       <header className="feature-header">
         <p className="eyebrow">অ্যাডমিন তালিকা</p>
         <h2>রক্তদাতা তালিকা</h2>
-        <p className="muted-text">এই তালিকা শুধু ইউনিয়ন/ওয়ার্ড দায়িত্বশীল ও উচ্চতর অ্যাডমিনদের জন্য।</p>
+        <p className="muted-text">৯০ দিনের নিয়ম অনুযায়ী কে এখন রক্ত দিতে পারবেন তা এখানে দেখা যাবে।</p>
       </header>
 
       <div className="toolbar">
@@ -151,50 +180,63 @@ export const DonorSearchPage = () => {
               <th>রক্তের গ্রুপ</th>
               <th>লোকেশন</th>
               <th>অবস্থা</th>
+              <th>যোগ্যতা</th>
+              <th>শেষ রক্তদান</th>
+              <th>পরবর্তী তারিখ</th>
               <th>যোগাযোগ</th>
               <th>চ্যাট</th>
             </tr>
           </thead>
           <tbody>
-            {results.map((donorProfile) => (
-              <tr key={donorProfile.id}>
-                <td data-label="নাম">{donorProfile.donor?.name || 'উল্লেখ নেই'}</td>
-                <td data-label="রক্তের গ্রুপ">{donorProfile.bloodGroup}</td>
-                <td data-label="লোকেশন">
-                  {donorProfile.donor?.locationNames
-                    ? [
-                        donorProfile.donor.locationNames.division,
-                        donorProfile.donor.locationNames.district,
-                        donorProfile.donor.locationNames.upazila,
-                        donorProfile.donor.locationNames.union,
-                      ]
-                        .filter(Boolean)
-                        .join(' / ')
-                    : donorProfile.donor?.location || 'উল্লেখ নেই'}
-                </td>
-                <td data-label="অবস্থা">
-                  <span className={`status-chip ${donorProfile.availabilityStatus}`}>
-                    {AVAILABILITY_LABELS[donorProfile.availabilityStatus] || donorProfile.availabilityStatus}
-                  </span>
-                </td>
-                <td data-label="যোগাযোগ">{donorProfile.donor?.phone || 'গোপন'}</td>
-                <td data-label="চ্যাট">
-                  {donorProfile.donor?.contactPreferences?.allowDonorChat !== false && donorProfile.donor?.phone ? (
-                    <Link
-                      className="inline-link-btn"
-                      to={`/chat?targetUserId=${encodeURIComponent(String(donorProfile.userId || ''))}`}
-                    >
-                      চ্যাট
-                    </Link>
-                  ) : (
-                    <span className="muted-text">চালু নেই</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {results.map((donorProfile) => {
+              const resolvedAvailability = getResolvedAvailability(donorProfile);
+              const canContact = donorProfile.isEligibleForDonation && resolvedAvailability === 'available';
+
+              return (
+                <tr key={donorProfile.id}>
+                  <td data-label="নাম">{donorProfile.donor?.name || 'উল্লেখ নেই'}</td>
+                  <td data-label="রক্তের গ্রুপ">{donorProfile.bloodGroup}</td>
+                  <td data-label="লোকেশন">
+                    {donorProfile.donor?.locationNames
+                      ? [
+                          donorProfile.donor.locationNames.division,
+                          donorProfile.donor.locationNames.district,
+                          donorProfile.donor.locationNames.upazila,
+                          donorProfile.donor.locationNames.union,
+                        ]
+                          .filter(Boolean)
+                          .join(' / ')
+                      : donorProfile.donor?.location || 'উল্লেখ নেই'}
+                  </td>
+                  <td data-label="অবস্থা">
+                    <span className={`status-chip ${resolvedAvailability}`}>
+                      {AVAILABILITY_LABELS[resolvedAvailability] || resolvedAvailability}
+                    </span>
+                  </td>
+                  <td data-label="যোগ্যতা">{getEligibilityLabel(donorProfile)}</td>
+                  <td data-label="শেষ রক্তদান">{formatDate(donorProfile.lastDonationDate)}</td>
+                  <td data-label="পরবর্তী তারিখ">{formatDate(donorProfile.nextEligibleDonationDate)}</td>
+                  <td data-label="যোগাযোগ">
+                    {canContact ? donorProfile.donor?.phone || 'গোপন' : <span className="muted-text">এখন নয়</span>}
+                  </td>
+                  <td data-label="চ্যাট">
+                    {canContact && donorProfile.donor?.contactPreferences?.allowDonorChat !== false && donorProfile.donor?.phone ? (
+                      <Link
+                        className="inline-link-btn"
+                        to={`/chat?targetUserId=${encodeURIComponent(String(donorProfile.userId || ''))}`}
+                      >
+                        চ্যাট
+                      </Link>
+                    ) : (
+                      <span className="muted-text">চালু নেই</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={6}>এই ফিল্টারে কোনো রক্তদাতা পাওয়া যায়নি।</td>
+                <td colSpan={9}>এই ফিল্টারে কোনো রক্তদাতা পাওয়া যায়নি।</td>
               </tr>
             ) : null}
           </tbody>
