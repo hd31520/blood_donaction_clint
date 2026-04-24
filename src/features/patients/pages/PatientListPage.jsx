@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, Phone, Share2, X } from 'lucide-react';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { useAuth } from '../../auth/context/AuthContext.jsx';
@@ -15,6 +15,12 @@ const STATUS_LABELS = {
   fulfilled: 'সম্পন্ন',
   cancelled: 'বাতিল',
 };
+const URGENCY_LABELS = {
+  low: 'কম',
+  medium: 'মাঝারি',
+  high: 'জরুরি',
+  critical: 'অতি জরুরি',
+};
 const MEDICAL_CONDITION_OPTIONS = [
   { value: 'none', label: 'একবারের প্রয়োজন' },
   { value: 'thalassemia', label: 'থ্যালাসেমিয়া (নিয়মিত রক্ত লাগে)' },
@@ -27,6 +33,34 @@ const PUBLIC_PATIENT_NAV_LINKS = [
   { key: 'login', label: 'লগইন', path: '/login', guestOnly: true },
   { key: 'dashboard', label: 'ড্যাশবোর্ড', path: '/dashboard', authOnly: true },
 ];
+
+const normalizeBangladeshPhone = (phone = '') => {
+  const digits = String(phone).replace(/\D/g, '');
+
+  if (digits.startsWith('880')) {
+    return digits;
+  }
+
+  if (digits.startsWith('0')) {
+    return `88${digits}`;
+  }
+
+  return digits;
+};
+
+const buildPatientShareText = (patient) => {
+  const location = [
+    patient.locationNames?.division,
+    patient.locationNames?.district,
+    patient.locationNames?.upazila,
+    patient.locationNames?.union,
+    patient.locationNames?.area,
+  ]
+    .filter(Boolean)
+    .join(' / ');
+
+  return `${patient.patientName || 'একজন রোগী'} এর জন্য ${patient.bloodGroup || ''} রক্ত প্রয়োজন। লোকেশন: ${location || 'উল্লেখ নেই'}। যোগাযোগ: ${patient.contactPhone || 'উল্লেখ নেই'}`;
+};
 
 export const PatientListPage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -225,6 +259,27 @@ export const PatientListPage = () => {
       areaName: '',
     });
     setFormLocationResetKey((previous) => previous + 1);
+  };
+
+  const handleSharePatient = async (patient) => {
+    const shareText = buildPatientShareText(patient);
+    const shareUrl = `${window.location.origin}/patients`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'রক্ত প্রয়োজন',
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      }
+
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      toast.success('শেয়ার তথ্য কপি হয়েছে।');
+    } catch {
+      toast.error('শেয়ার করা যায়নি।');
+    }
   };
 
   const submitCreatePatient = async (event) => {
@@ -560,55 +615,89 @@ export const PatientListPage = () => {
             <tr>
               <th>রোগী</th>
               <th>রক্তের গ্রুপ</th>
+              <th>জরুরিতা</th>
               <th>ব্যাগ</th>
               <th>হাসপাতাল</th>
               <th>লোকেশন</th>
               <th>অবস্থা</th>
               <th>যোগাযোগ</th>
+              <th>অ্যাকশন</th>
               <th>চ্যাট</th>
             </tr>
           </thead>
           <tbody>
-            {results.map((patient) => (
-              <tr key={patient.id}>
-                <td data-label="রোগী">{patient.patientName}</td>
-                <td data-label="রক্তের গ্রুপ">{patient.bloodGroup}</td>
-                <td data-label="ব্যাগ">{patient.unitsReceived}/{patient.unitsRequired}</td>
-                <td data-label="হাসপাতাল">{patient.hospital?.name || patient.hospitalName || 'উল্লেখ নেই'}</td>
-                <td data-label="লোকেশন">
-                  {[
-                    patient.locationNames?.division,
-                    patient.locationNames?.district,
-                    patient.locationNames?.upazila,
-                    patient.locationNames?.union,
-                    patient.locationNames?.area,
-                  ]
-                    .filter(Boolean)
-                    .join(' / ') || 'উল্লেখ নেই'}
-                </td>
-                <td data-label="অবস্থা">
-                  <span className={`status-chip ${patient.status}`}>
-                    {STATUS_LABELS[patient.status] || patient.status}
-                  </span>
-                </td>
-                <td data-label="যোগাযোগ">{patient.contactPhone || 'উল্লেখ নেই'}</td>
-                <td data-label="চ্যাট">
-                  {canUsePatientChat && patient.requestedBy?.id ? (
-                    <Link
-                      className="inline-link-btn"
-                      to={`/chat?targetUserId=${encodeURIComponent(String(patient.requestedBy.id))}&patientId=${encodeURIComponent(String(patient.id))}`}
-                    >
-                      চ্যাট
-                    </Link>
-                  ) : (
-                    <span className="muted-text">চালু নেই</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {results.map((patient) => {
+              const normalizedPhone = normalizeBangladeshPhone(patient.contactPhone);
+              const whatsappUrl = normalizedPhone
+                ? `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(buildPatientShareText(patient))}`
+                : '';
+
+              return (
+                <tr key={patient.id}>
+                  <td data-label="রোগী">{patient.patientName}</td>
+                  <td data-label="রক্তের গ্রুপ">{patient.bloodGroup}</td>
+                  <td data-label="জরুরিতা">
+                    <span className={`status-chip ${patient.urgencyLevel || 'medium'}`}>
+                      {URGENCY_LABELS[patient.urgencyLevel] || 'মাঝারি'}
+                    </span>
+                  </td>
+                  <td data-label="ব্যাগ">{patient.unitsReceived}/{patient.unitsRequired}</td>
+                  <td data-label="হাসপাতাল">{patient.hospital?.name || patient.hospitalName || 'উল্লেখ নেই'}</td>
+                  <td data-label="লোকেশন">
+                    {[
+                      patient.locationNames?.division,
+                      patient.locationNames?.district,
+                      patient.locationNames?.upazila,
+                      patient.locationNames?.union,
+                      patient.locationNames?.area,
+                    ]
+                      .filter(Boolean)
+                      .join(' / ') || 'উল্লেখ নেই'}
+                  </td>
+                  <td data-label="অবস্থা">
+                    <span className={`status-chip ${patient.status}`}>
+                      {STATUS_LABELS[patient.status] || patient.status}
+                    </span>
+                  </td>
+                  <td data-label="যোগাযোগ">
+                    {patient.contactPhone ? (
+                      <a className="inline-link-btn" href={`tel:${patient.contactPhone}`}>
+                        <Phone size={14} /> কল
+                      </a>
+                    ) : (
+                      'উল্লেখ নেই'
+                    )}
+                  </td>
+                  <td data-label="অ্যাকশন">
+                    <div className="patient-row-actions">
+                      {whatsappUrl ? (
+                        <a className="inline-link-btn" href={whatsappUrl} target="_blank" rel="noreferrer">
+                          WhatsApp
+                        </a>
+                      ) : null}
+                      <button type="button" className="inline-link-btn" onClick={() => handleSharePatient(patient)}>
+                        <Share2 size={14} /> শেয়ার
+                      </button>
+                    </div>
+                  </td>
+                  <td data-label="চ্যাট">
+                    {canUsePatientChat && patient.requestedBy?.id ? (
+                      <Link
+                        className="inline-link-btn"
+                        to={`/chat?targetUserId=${encodeURIComponent(String(patient.requestedBy.id))}&patientId=${encodeURIComponent(String(patient.id))}`}
+                      >
+                        চ্যাট
+                      </Link>
+                    ) : (
+                      <span className="muted-text">চালু নেই</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={8}>এই ফিল্টারে কোনো অনুরোধ পাওয়া যায়নি।</td>
+                <td colSpan={10}>এই ফিল্টারে কোনো অনুরোধ পাওয়া যায়নি।</td>
               </tr>
             ) : null}
           </tbody>
