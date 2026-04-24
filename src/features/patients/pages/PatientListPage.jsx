@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { useAuth } from '../../auth/context/AuthContext.jsx';
@@ -18,6 +19,13 @@ const MEDICAL_CONDITION_OPTIONS = [
   { value: 'none', label: 'একবারের প্রয়োজন' },
   { value: 'thalassemia', label: 'থ্যালাসেমিয়া (নিয়মিত রক্ত লাগে)' },
   { value: 'other_regular', label: 'অন্যান্য নিয়মিত প্রয়োজন' },
+];
+
+const PUBLIC_PATIENT_NAV_LINKS = [
+  { key: 'home', label: 'হোম', path: '/home' },
+  { key: 'patients', label: 'রক্তের প্রয়োজন', path: '/patients' },
+  { key: 'login', label: 'লগইন', path: '/login', guestOnly: true },
+  { key: 'dashboard', label: 'ড্যাশবোর্ড', path: '/dashboard', authOnly: true },
 ];
 
 export const PatientListPage = () => {
@@ -40,6 +48,7 @@ export const PatientListPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hospitalOptions, setHospitalOptions] = useState([]);
   const [formLocationResetKey, setFormLocationResetKey] = useState(0);
+  const [isPublicMenuOpen, setIsPublicMenuOpen] = useState(false);
   const [createForm, setCreateForm] = useState({
     patientName: '',
     patientAge: '',
@@ -65,6 +74,17 @@ export const PatientListPage = () => {
   const [allowPatientChat, setAllowPatientChat] = useState(false);
 
   const canUsePatientChat = user?.role === 'donor' && allowPatientChat;
+  const visiblePublicNavLinks = PUBLIC_PATIENT_NAV_LINKS.filter((link) => {
+    if (link.authOnly) {
+      return isAuthenticated;
+    }
+
+    if (link.guestOnly) {
+      return !isAuthenticated;
+    }
+
+    return true;
+  });
 
   const searchFilters = useMemo(
     () => ({
@@ -262,6 +282,40 @@ export const PatientListPage = () => {
 
   return (
     <section className="feature-page reveal patient-page">
+      <header className="table-card patient-public-menu">
+        <div className="panel-card-header">
+          <div>
+            <p className="eyebrow">বাংলা ব্লাড</p>
+            <h3>রক্ত সহায়তা</h3>
+          </div>
+          <button
+            type="button"
+            className="mobile-menu-toggle inline-link-btn"
+            aria-label={isPublicMenuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
+            aria-expanded={isPublicMenuOpen}
+            onClick={() => setIsPublicMenuOpen((previous) => !previous)}
+          >
+            {isPublicMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            <span>{isPublicMenuOpen ? 'বন্ধ' : 'মেনু'}</span>
+          </button>
+        </div>
+
+        {isPublicMenuOpen ? (
+          <nav className="toolbar patient-toolbar" aria-label="Patients page navigation">
+            {visiblePublicNavLinks.map((link) => (
+              <NavLink
+                key={link.key}
+                to={link.path}
+                className={({ isActive }) => `inline-link-btn ${isActive ? 'active' : ''}`}
+                onClick={() => setIsPublicMenuOpen(false)}
+              >
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
+        ) : null}
+      </header>
+
       <header className="feature-header">
         <p className="eyebrow">রক্তের প্রয়োজন</p>
         <h2>রোগী ও রক্তের অনুরোধের তালিকা</h2>
