@@ -43,6 +43,11 @@ export const patientService = {
     };
   },
 
+  getById: async (id) => {
+    const response = await apiClient.get(`/patients/${id}`);
+    return response.data?.data || null;
+  },
+
   listHospitals: async (filters = {}) => {
     const params = {
       page: 1,
