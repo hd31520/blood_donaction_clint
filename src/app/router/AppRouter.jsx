@@ -16,6 +16,7 @@ const ChatPage = lazy(() => import('../../features/chat/pages/ChatPage.jsx').the
 const HospitalManagementPage = lazy(() => import('../../features/hospitals/pages/HospitalManagementPage.jsx').then((m) => ({ default: m.HospitalManagementPage })));
 const RoleManagementPage = lazy(() => import('../../features/management/pages/RoleManagementPage.jsx').then((m) => ({ default: m.RoleManagementPage })));
 const PatientListPage = lazy(() => import('../../features/patients/pages/PatientListPage.jsx').then((m) => ({ default: m.PatientListPage })));
+const PatientDetailsPage = lazy(() => import('../../features/patients/pages/PatientDetailsPage.jsx'));
 const ProfilePage = lazy(() => import('../../features/profile/pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })));
 const ReportsPage = lazy(() => import('../../features/reports/pages/ReportsPage.jsx').then((m) => ({ default: m.ReportsPage })));
 
@@ -30,16 +31,14 @@ const wrap = (Component) => (
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* redirect */}
       <Route path="/" element={<Navigate to="/home" replace />} />
 
-      {/* public routes (with AppShell) */}
       <Route element={<AppShell />}>
         <Route path="/home" element={wrap(HomePage)} />
         <Route path="/patients" element={wrap(PatientListPage)} />
+        <Route path="/patients/:id" element={wrap(PatientDetailsPage)} />
       </Route>
 
-      {/* guest only */}
       <Route
         path="/login"
         element={
@@ -58,7 +57,6 @@ export const AppRouter = () => {
         }
       />
 
-      {/* protected app routes */}
       <Route
         element={
           <ProtectedRoute>
@@ -111,7 +109,6 @@ export const AppRouter = () => {
         <Route path="/community" element={wrap(CommunityPage)} />
       </Route>
 
-      {/* standalone protected route */}
       <Route
         path="/donors/:donorId"
         element={
@@ -121,7 +118,6 @@ export const AppRouter = () => {
         }
       />
 
-      {/* fallback */}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
