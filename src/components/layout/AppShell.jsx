@@ -1,4 +1,4 @@
-import { Menu, X } from 'lucide-react';
+import { ClipboardList, Home, LogIn, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 
@@ -7,11 +7,34 @@ import { NotificationCenter } from '../../components/global/NotificationCenter.j
 import { useAuth } from '../../features/auth/context/AuthContext.jsx';
 import { NavItem } from '../navigation/NavItem.jsx';
 
+const publicRoutes = [
+  {
+    key: 'home',
+    label: 'হোম',
+    path: '/home',
+    icon: Home,
+  },
+  {
+    key: 'patients',
+    label: 'রক্তের প্রয়োজন',
+    path: '/patients',
+    icon: ClipboardList,
+  },
+  {
+    key: 'login',
+    label: 'লগইন',
+    path: '/login',
+    icon: LogIn,
+  },
+];
+
 export const AppShell = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const visibleRoutes = appRoutes.filter((route) => route.roles.includes(user?.role));
+  const visibleRoutes = isAuthenticated
+    ? appRoutes.filter((route) => route.roles.includes(user?.role))
+    : publicRoutes;
 
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -51,11 +74,11 @@ export const AppShell = () => {
           {user?.profileImageUrl ? (
             <img className="user-chip-avatar" src={user.profileImageUrl} alt={user?.name || 'User'} />
           ) : null}
-          <strong>{user?.name || 'ব্যবহারকারী'}</strong>
-          <span>{user?.roleLabel || user?.role || 'অতিথি'}</span>
+          <strong>{user?.name || 'অতিথি ব্যবহারকারী'}</strong>
+          <span>{user?.roleLabel || user?.role || 'পাবলিক ভিজিটর'}</span>
         </div>
 
-        <NotificationCenter />
+        {isAuthenticated ? <NotificationCenter /> : null}
 
         <nav className="sidebar-nav">
           {visibleRoutes.map((route) => (
@@ -69,16 +92,18 @@ export const AppShell = () => {
           ))}
         </nav>
 
-        <button
-          type="button"
-          className="logout-btn"
-          onClick={() => {
-            setIsSidebarOpen(false);
-            logout();
-          }}
-        >
-          লগআউট
-        </button>
+        {isAuthenticated ? (
+          <button
+            type="button"
+            className="logout-btn"
+            onClick={() => {
+              setIsSidebarOpen(false);
+              logout();
+            }}
+          >
+            লগআউট
+          </button>
+        ) : null}
       </aside>
 
       <div className="app-content-wrap">
@@ -102,7 +127,7 @@ export const AppShell = () => {
           <Link to="/home" className="inline-link-btn">
             হোম
           </Link>
-          <NotificationCenter />
+          {isAuthenticated ? <NotificationCenter /> : null}
         </header>
 
         <main className="app-content">
