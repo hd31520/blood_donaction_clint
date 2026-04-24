@@ -5,27 +5,12 @@ const datasetCache = {
   data: null,
 };
 
-const FARIDPUR_SADAR_UNION_NAMES = [
-  'Aliabad',
-  'Ambikapur',
-  'Char Madhabdia',
-  'Decreer Char',
-  'Greda',
-  'Ishan Gopalpur',
-  'Kaijuri',
-  'Kanaipur',
-  'Krishnanagar',
-  'Maj Char',
-  'Uttar Channel',
-];
-
-const FARIDPUR_SADAR_WARDS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
 const toLocationItem = (item, extra = {}) => ({
   id: String(item.id),
   name: item.name,
   bnName: item.bnName || '',
   code: item.code || '',
+  externalId: item.externalId || item.id,
   ...extra,
 });
 
@@ -71,52 +56,22 @@ const findUpazilaNode = (districtNode, upazilaId) => {
 const normalizeName = (value = '') => {
   return String(value)
     .toLowerCase()
-    .replace(/district|division|city corporation|zila|জেলা|বিভাগ|সিটি কর্পোরেশন/gi, '')
+    .replace(/district|division|city corporation|zila|জেলা|বিভাগ|সিটি কর্পোরেশন|upazila|উপজেলা/gi, '')
     .replace(/[.,()/-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 };
 
-const isFaridpurSadarContext = ({ upazilaName, upazilaBnName, districtName, districtBnName }) => {
-  const normalizedUpazila = normalizeName(upazilaName || upazilaBnName || '');
-  const normalizedDistrict = normalizeName(districtName || districtBnName || '');
-
-  return normalizedUpazila === 'faridpur sadar' && normalizedDistrict === 'faridpur';
-};
-
-const buildFaridpurSadarUnionFallback = () => {
-  return FARIDPUR_SADAR_UNION_NAMES.map((name, index) =>
-    toLocationItem(
-      {
-        id: `faridpur-sadar-union-${index + 1}`,
-        name,
-        bnName: '',
-        code: `FARIDPUR-SADAR-UNION-${String(index + 1).padStart(2, '0')}`,
-      },
-      {
-        areaType: 'union',
-      },
-    ),
-  );
-};
-
-const buildFaridpurSadarPouroshavaFallback = () => {
-  return FARIDPUR_SADAR_WARDS.map((ward) =>
-    toLocationItem(
-      {
-        id: `faridpur-sadar-ward-${ward}`,
-        name: `Ward ${ward}`,
-        bnName: '',
-        code: `FARIDPUR-SADAR-WARD-${ward}`,
-      },
-      {
-        areaType: 'pouroshava',
-      },
-    ),
-  );
-};
-
 const isNumericLike = (value) => /^\d+$/.test(String(value || '').trim());
+
+const getAreaType = (item = {}) => {
+  if (item.areaType === 'pouroshava' || item.areaType === 'union') {
+    return item.areaType;
+  }
+
+  const content = `${item.name || ''} ${item.bnName || ''} ${item.code || ''}`.toLowerCase();
+  return /pouroshava|pourashava|municipality|পৌরসভা/.test(content) ? 'pouroshava' : 'union';
+};
 
 const resolveUpazilaByCriteria = (dataset, criteria = {}) => {
   const hierarchy = dataset?.hierarchical || [];
@@ -179,6 +134,19 @@ const resolveUpazilaByCriteria = (dataset, criteria = {}) => {
   return null;
 };
 
+const mapAreasByType = (upazilaNode, areaType) => {
+  return (upazilaNode?.unions || [])
+    .filter((area) => getAreaType(area) === areaType)
+    .map((area) =>
+      toLocationItem(area, {
+        divisionId: String(area.divisionId || upazilaNode.divisionId || ''),
+        districtId: String(area.districtId || upazilaNode.districtId || ''),
+        upazilaId: String(area.upazilaId || upazilaNode.id || ''),
+        areaType,
+      }),
+    );
+};
+
 export const getPublicDivisions = async () => {
   const dataset = await loadPublicLocationDataset();
   return (dataset?.hierarchical || []).map((division) => toLocationItem(division));
@@ -188,7 +156,7 @@ export const getPublicDistrictsByDivisionId = async (divisionId) => {
   const dataset = await loadPublicLocationDataset();
   const divisionNode = findDivisionNode(dataset, divisionId);
   return (divisionNode?.districts || []).map((district) =>
-    toLocationItem(district, { divisionId: String(district.divisionId) }),
+    toLocationItem(district, { divisionId: String(district.divisionId || divisionNode.id) }),
   );
 };
 
@@ -202,8 +170,8 @@ export const getPublicUpazilasByDistrictId = async (districtId) => {
 
     return (districtNode.upazilas || []).map((upazila) =>
       toLocationItem(upazila, {
-        divisionId: String(upazila.divisionId),
-        districtId: String(upazila.districtId),
+        divisionId: String(upazila.divisionId || divisionNode.id),
+        districtId: String(upazila.districtId || districtNode.id),
       }),
     );
   }
@@ -219,78 +187,17 @@ export const getPublicUnionsByUpazilaId = async (criteriaOrUpazilaId) => {
       : { upazilaId: criteriaOrUpazilaId };
 
   const resolved = resolveUpazilaByCriteria(dataset, criteria);
-
-  if (isFaridpurSadarContext(criteria)) {
-    return buildFaridpurSadarUnionFallback();
-  }
-
-  if (
-    resolved?.upazilaNode &&
-    isFaridpurSadarContext({
-      upazilaName: resolved.upazilaNode.name,
-      upazilaBnName: resolved.upazilaNode.bnName,
-      districtName: resolved.districtNode?.name,
-      districtBnName: resolved.districtNode?.bnName,
-    })
-  ) {
-    return buildFaridpurSadarUnionFallback();
-  }
-
-  if (resolved?.upazilaNode) {
-    return (resolved.upazilaNode.unions || []).map((union) =>
-      toLocationItem(union, {
-        divisionId: String(union.divisionId),
-        districtId: String(union.districtId),
-        upazilaId: String(union.upazilaId),
-        areaType: 'union',
-      }),
-    );
-  }
-
-  for (const divisionNode of dataset?.hierarchical || []) {
-    for (const districtNode of divisionNode.districts || []) {
-      const upazilaNode = findUpazilaNode(districtNode, criteria.upazilaId);
-      if (!upazilaNode) {
-        continue;
-      }
-
-      return (upazilaNode.unions || []).map((union) =>
-        toLocationItem(union, {
-          divisionId: String(union.divisionId),
-          districtId: String(union.districtId),
-          upazilaId: String(union.upazilaId),
-          areaType: 'union',
-        }),
-      );
-    }
-  }
-
-  return [];
+  return mapAreasByType(resolved?.upazilaNode, 'union');
 };
 
-export const getPublicPouroshavasByUpazilaId = async () => {
-  return [];
+export const getPublicPouroshavasByUpazilaId = async (upazilaId) => {
+  const dataset = await loadPublicLocationDataset();
+  const resolved = resolveUpazilaByCriteria(dataset, { upazilaId });
+  return mapAreasByType(resolved?.upazilaNode, 'pouroshava');
 };
 
 export const getPublicPouroshavasByCriteria = async (criteria = {}) => {
   const dataset = await loadPublicLocationDataset();
   const resolved = resolveUpazilaByCriteria(dataset, criteria);
-
-  if (isFaridpurSadarContext(criteria)) {
-    return buildFaridpurSadarPouroshavaFallback();
-  }
-
-  if (
-    resolved?.upazilaNode &&
-    isFaridpurSadarContext({
-      upazilaName: resolved.upazilaNode.name,
-      upazilaBnName: resolved.upazilaNode.bnName,
-      districtName: resolved.districtNode?.name,
-      districtBnName: resolved.districtNode?.bnName,
-    })
-  ) {
-    return buildFaridpurSadarPouroshavaFallback();
-  }
-
-  return [];
+  return mapAreasByType(resolved?.upazilaNode, 'pouroshava');
 };
