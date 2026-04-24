@@ -31,6 +31,10 @@ export const patientService = {
       params.upazilaId = filters.upazilaId;
     }
 
+    if (filters.unionId) {
+      params.unionId = filters.unionId;
+    }
+
     const response = await apiClient.get('/patients', { params });
 
     return {

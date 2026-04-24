@@ -57,25 +57,25 @@ export const RegisterPage = () => {
     const missingFields = [];
 
     if (!formData.divisionId) {
-      missingFields.push('division');
+      missingFields.push('বিভাগ');
     }
     if (!formData.districtId) {
-      missingFields.push('district');
+      missingFields.push('জেলা');
     }
     if (!formData.upazilaId) {
-      missingFields.push('upazila');
+      missingFields.push('উপজেলা');
     }
     if (!formData.areaType) {
-      missingFields.push('area type');
+      missingFields.push('এলাকার ধরন');
     }
     if (!formData.unionId) {
       if (!formData.unionName) {
-        missingFields.push(formData.areaType === 'pouroshava' ? 'pouroshava' : 'union');
+        missingFields.push(formData.areaType === 'pouroshava' ? 'পৌরসভা' : 'ইউনিয়ন');
       }
     }
 
     if (formData.areaType === 'pouroshava' && !formData.wardNumber) {
-      missingFields.push('ward number');
+      missingFields.push('ওয়ার্ড নম্বর');
     }
 
     return missingFields;
@@ -87,7 +87,7 @@ export const RegisterPage = () => {
 
     if (!hasCompleteLocation) {
       const missingLocationFields = getMissingLocationFields();
-      const errorMessage = `Please select required location fields: ${missingLocationFields.join(', ')}.`;
+      const errorMessage = `প্রয়োজনীয় লোকেশন তথ্য নির্বাচন করুন: ${missingLocationFields.join(', ')}।`;
       setError(errorMessage);
       toast.error(errorMessage);
       return;
@@ -97,7 +97,7 @@ export const RegisterPage = () => {
 
     try {
       const user = await register(formData);
-      toast.success('Registration successful. Welcome!');
+      toast.success('নিবন্ধন সফল হয়েছে। স্বাগতম!');
       navigate(getRoleDefaultPath(user?.role), { replace: true });
     } catch (requestError) {
       const serverMessage = requestError?.response?.data?.message;
@@ -138,38 +138,49 @@ export const RegisterPage = () => {
   return (
     <section className="auth-page reveal">
       <article className="auth-card wide">
-        <p className="eyebrow">Create Account</p>
-        <h2>Register as Donor</h2>
+        <div className="auth-brand-row">
+          <span className="auth-brand-mark">BB</span>
+          <div>
+            <p className="eyebrow">নতুন অ্যাকাউন্ট</p>
+            <h2>রক্তদাতা বা সন্ধানকারী হিসেবে নিবন্ধন</h2>
+          </div>
+        </div>
+        <p className="auth-subtitle">যাচাইকৃত লোকেশন ও নিরাপদ পরিচয় দিয়ে স্থানীয় রক্ত সহায়তা নেটওয়ার্কে যুক্ত হন।</p>
 
-        <form onSubmit={handleSubmit} className="auth-form grid-two">
-          <label htmlFor="registerName">Full Name</label>
+        <form onSubmit={handleSubmit} className="auth-form grid-two" aria-describedby={error ? 'registerError' : undefined}>
+          <label htmlFor="registerName">পূর্ণ নাম</label>
           <input
             id="registerName"
             type="text"
             value={formData.name}
             onChange={handleChange('name')}
+            autoComplete="name"
             required
           />
 
-          <label htmlFor="registerEmail">Email</label>
+          <label htmlFor="registerEmail">ইমেইল</label>
           <input
             id="registerEmail"
             type="email"
             value={formData.email}
             onChange={handleChange('email')}
+            autoComplete="email"
+            inputMode="email"
             required
           />
 
-          <label htmlFor="registerPassword">Password</label>
+          <label htmlFor="registerPassword">পাসওয়ার্ড</label>
           <input
             id="registerPassword"
             type="password"
             value={formData.password}
             onChange={handleChange('password')}
+            autoComplete="new-password"
+            minLength={8}
             required
           />
 
-          <label htmlFor="registerBloodGroup">Blood Group</label>
+          <label htmlFor="registerBloodGroup">রক্তের গ্রুপ</label>
           <select
             id="registerBloodGroup"
             value={formData.bloodGroup}
@@ -186,13 +197,13 @@ export const RegisterPage = () => {
             <option value="O-">O-</option>
           </select>
 
-          <label htmlFor="registerRole">Account Type</label>
+          <label htmlFor="registerRole">অ্যাকাউন্টের ধরন</label>
           <select id="registerRole" value={formData.role} onChange={handleChange('role')} required>
-            <option value="donor">Donor</option>
-            <option value="finder">Finder</option>
+            <option value="donor">রক্তদাতা</option>
+            <option value="finder">রক্ত খুঁজছেন</option>
           </select>
 
-          <label htmlFor="registerDistrict">Location</label>
+          <label htmlFor="registerDistrict">লোকেশন</label>
           <LocationSelector
             required
             mode="required"
@@ -200,31 +211,34 @@ export const RegisterPage = () => {
             onChange={handleLocationChange}
           />
 
-          <label htmlFor="registerPhone">Phone</label>
+          <label htmlFor="registerPhone">মোবাইল নম্বর</label>
           <input
             id="registerPhone"
             type="text"
             value={formData.phone}
             onChange={handleChange('phone')}
+            autoComplete="tel"
+            inputMode="tel"
           />
 
-          <label htmlFor="registerLocation">Address / Location</label>
+          <label htmlFor="registerLocation">ঠিকানা / লোকেশন</label>
           <input
             id="registerLocation"
             type="text"
             value={formData.location}
             onChange={handleChange('location')}
+            autoComplete="street-address"
           />
 
-          {error ? <p className="auth-error full-width">{error}</p> : null}
+          {error ? <p id="registerError" className="auth-error full-width">{error}</p> : null}
 
           <button className="full-width" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Register'}
+            {isSubmitting ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'নিবন্ধন'}
           </button>
         </form>
 
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Login</Link>
+          আগে থেকেই অ্যাকাউন্ট আছে? <Link to="/login">লগইন করুন</Link>
         </p>
       </article>
     </section>

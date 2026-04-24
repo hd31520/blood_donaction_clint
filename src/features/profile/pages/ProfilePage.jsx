@@ -4,12 +4,13 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../../auth/context/AuthContext.jsx';
 import { authService } from '../../auth/services/authService.js';
 import { donorSearchService } from '../../donors/services/donorSearchService.js';
+import { upazilaSettingsService } from '../services/upazilaSettingsService.js';
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Failed to read selected file'));
+    reader.onerror = () => reject(new Error('নির্বাচিত ফাইল পড়া যায়নি'));
     reader.readAsDataURL(file);
   });
 
@@ -24,6 +25,7 @@ export const ProfilePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSavedImgbbKey, setHasSavedImgbbKey] = useState(false);
   const [donorPreferences, setDonorPreferences] = useState({
     bloodGroup: '',
     lastDonationDate: '',
@@ -89,9 +91,44 @@ export const ProfilePage = () => {
       name: user.name || '',
       phone: user.phone || '',
       location: user.location || '',
-      imgbbApiKey: window.localStorage.getItem('imgbbApiKey') || '',
+      imgbbApiKey: '',
     });
     setPreviewUrl(user.profileImageUrl || '');
+
+    if (user.role === 'donor' && user.bloodGroup) {
+      setDonorPreferences((previous) => ({
+        ...previous,
+        bloodGroup: previous.bloodGroup || user.bloodGroup,
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'upazila_admin') {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadImgbbSettings = async () => {
+      try {
+        const settings = await upazilaSettingsService.getImgbbSettings();
+
+        if (isMounted) {
+          setHasSavedImgbbKey(Boolean(settings?.hasImgbbApiKey));
+        }
+      } catch {
+        if (isMounted) {
+          setHasSavedImgbbKey(false);
+        }
+      }
+    };
+
+    loadImgbbSettings();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   useEffect(() => {
@@ -170,8 +207,9 @@ export const ProfilePage = () => {
     setIsSubmitting(true);
 
     try {
-      if (formData.imgbbApiKey) {
-        window.localStorage.setItem('imgbbApiKey', formData.imgbbApiKey);
+      if (user?.role === 'upazila_admin' && formData.imgbbApiKey.trim()) {
+        await upazilaSettingsService.saveImgbbApiKey(formData.imgbbApiKey.trim());
+        setHasSavedImgbbKey(true);
       }
 
       const updatedUser = await authService.updateMe({
@@ -182,7 +220,7 @@ export const ProfilePage = () => {
 
       if (user?.role === 'donor') {
         await donorSearchService.updateMyProfile({
-          bloodGroup: donorPreferences.bloodGroup,
+          bloodGroup: donorPreferences.bloodGroup || user.bloodGroup || 'A+',
           lastDonationDate: donorPreferences.lastDonationDate || undefined,
           availabilityStatus: donorPreferences.availabilityStatus,
           isPhoneVisible: donorPreferences.isPhoneVisible,
@@ -197,50 +235,50 @@ export const ProfilePage = () => {
 
       await refreshUser?.();
       setFormData((previous) => ({ ...previous, ...updatedUser }));
-      toast.success('Profile updated successfully.');
+      toast.success('প্রোফাইল আপডেট হয়েছে।');
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to update profile.');
+      toast.error(requestError?.response?.data?.message || 'প্রোফাইল আপডেট করা যায়নি।');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const roleLabel = useMemo(() => user?.roleLabel || user?.role || 'User', [user]);
+  const roleLabel = useMemo(() => user?.roleLabel || user?.role || 'ব্যবহারকারী', [user]);
 
   return (
     <section className="feature-page reveal profile-page">
       <header className="feature-header">
-        <p className="eyebrow">Profile Settings</p>
-        <h2>{roleLabel} Profile</h2>
+        <p className="eyebrow">প্রোফাইল সেটিংস</p>
+        <h2>{roleLabel} প্রোফাইল</h2>
       </header>
 
       <form className="profile-layout" onSubmit={submitProfile}>
         <article className="panel-card profile-card">
           <div className="profile-avatar-row">
             {previewUrl ? (
-              <img className="profile-avatar large" src={previewUrl} alt={user?.name || 'Profile'} />
+              <img className="profile-avatar large" src={previewUrl} alt={user?.name || 'প্রোফাইল'} />
             ) : (
-              <div className="profile-avatar large placeholder">{user?.name?.slice(0, 1) || 'U'}</div>
+              <div className="profile-avatar large placeholder">{user?.name?.slice(0, 1) || 'ব'}</div>
             )}
             <div>
-              <h3>{user?.name || 'User'}</h3>
-              <p className="muted-text">Update your public profile image and contact details here.</p>
+              <h3>{user?.name || 'ব্যবহারকারী'}</h3>
+              <p className="muted-text">প্রোফাইল ছবি ও যোগাযোগের তথ্য আপডেট করুন।</p>
             </div>
           </div>
 
           <div className="profile-form-grid">
             <div className="home-filter-field">
-              <label htmlFor="profileName">Name</label>
+              <label htmlFor="profileName">নাম</label>
               <input id="profileName" value={formData.name} onChange={handleChange('name')} />
             </div>
 
             <div className="home-filter-field">
-              <label htmlFor="profilePhone">Phone</label>
+              <label htmlFor="profilePhone">মোবাইল</label>
               <input id="profilePhone" value={formData.phone} onChange={handleChange('phone')} />
             </div>
 
             <div className="home-filter-field profile-full-width">
-              <label htmlFor="profileLocation">Location</label>
+              <label htmlFor="profileLocation">ঠিকানা</label>
               <input
                 id="profileLocation"
                 value={formData.location}
@@ -251,7 +289,7 @@ export const ProfilePage = () => {
             {user?.role === 'donor' ? (
               <>
                 <div className="home-filter-field">
-                  <label htmlFor="donorBloodGroup">Blood Group</label>
+                  <label htmlFor="donorBloodGroup">রক্তের গ্রুপ</label>
                   <select
                     id="donorBloodGroup"
                     value={donorPreferences.bloodGroup}
@@ -274,7 +312,7 @@ export const ProfilePage = () => {
                 </div>
 
                 <div className="home-filter-field">
-                  <label htmlFor="lastDonationDate">Last Donation Date</label>
+                  <label htmlFor="lastDonationDate">শেষ রক্তদানের তারিখ</label>
                   <input
                     id="lastDonationDate"
                     type="date"
@@ -289,7 +327,7 @@ export const ProfilePage = () => {
                 </div>
 
                 <div className="home-filter-field profile-full-width">
-                  <label htmlFor="availabilityStatus">Available For Donation</label>
+                  <label htmlFor="availabilityStatus">রক্তদানের জন্য প্রস্তুত</label>
                   <select
                     id="availabilityStatus"
                     value={donorPreferences.availabilityStatus}
@@ -301,19 +339,18 @@ export const ProfilePage = () => {
                     }
                   >
                     <option value="available" disabled={!donorEligibility.isEligibleForDonation}>
-                      Available
+                      প্রস্তুত
                     </option>
-                    <option value="temporarily_unavailable">Temporarily Unavailable</option>
-                    <option value="unavailable">Unavailable</option>
+                    <option value="temporarily_unavailable">সাময়িক অনুপলব্ধ</option>
+                    <option value="unavailable">অনুপলব্ধ</option>
                   </select>
                   {!donorEligibility.isEligibleForDonation ? (
                     <p className="muted-text" style={{ marginTop: '0.35rem' }}>
-                      Donation unlocks after{' '}
+                      আবার রক্ত দিতে পারবেন{' '}
                       {donorEligibility.nextEligibleDonationDate
-                        ? donorEligibility.nextEligibleDonationDate.toLocaleDateString()
-                        : '90 days'}{' '}
-                      ({donorEligibility.daysUntilEligible} day
-                      {donorEligibility.daysUntilEligible === 1 ? '' : 's'} left).
+                        ? donorEligibility.nextEligibleDonationDate.toLocaleDateString('bn-BD')
+                        : '৯০ দিন পরে'}{' '}
+                      ({donorEligibility.daysUntilEligible.toLocaleString('bn-BD')} দিন বাকি)।
                     </p>
                   ) : null}
                 </div>
@@ -331,7 +368,7 @@ export const ProfilePage = () => {
                         }))
                       }
                     />{' '}
-                    Show my phone number to others
+                    আমার মোবাইল নম্বর অ্যাডমিনদের দেখান
                   </label>
                 </div>
 
@@ -348,7 +385,7 @@ export const ProfilePage = () => {
                         }))
                       }
                     />{' '}
-                    Allow chat from donor list
+                    রক্তদাতা তালিকা থেকে চ্যাট চালু রাখুন
                   </label>
                 </div>
 
@@ -365,33 +402,37 @@ export const ProfilePage = () => {
                         }))
                       }
                     />{' '}
-                    Show chat option in patient list
+                    রোগীর তালিকায় চ্যাট অপশন দেখান
                   </label>
                 </div>
               </>
             ) : null}
 
             <div className="home-filter-field profile-full-width">
-              <label htmlFor="profileImage">Profile Image</label>
+              <label htmlFor="profileImage">প্রোফাইল ছবি</label>
               <input id="profileImage" type="file" accept="image/*" onChange={handleFileChange} />
             </div>
 
             {user?.role === 'upazila_admin' ? (
               <div className="home-filter-field profile-full-width">
-                <label htmlFor="imgbbApiKey">ImgBB API Key (Upazila Setting)</label>
+                <label htmlFor="imgbbApiKey">ImgBB API Key (উপজেলা সেটিং)</label>
                 <input
                   id="imgbbApiKey"
                   type="password"
                   value={formData.imgbbApiKey}
                   onChange={handleChange('imgbbApiKey')}
-                  placeholder="Save upazila-level ImgBB key"
+                  placeholder={
+                    hasSavedImgbbKey
+                      ? 'বর্তমান key সংরক্ষিত আছে; বদলাতে নতুন key দিন'
+                      : 'উপজেলা পর্যায়ের ImgBB key সংরক্ষণ করুন'
+                  }
                 />
               </div>
             ) : null}
           </div>
 
           <button type="submit" disabled={isSubmitting} className="full-width">
-            {isSubmitting ? 'Saving Profile...' : 'Save Profile'}
+            {isSubmitting ? 'সংরক্ষণ হচ্ছে...' : 'প্রোফাইল সংরক্ষণ করুন'}
           </button>
         </article>
       </form>

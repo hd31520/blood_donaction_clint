@@ -19,10 +19,10 @@ export const CommunityPage = () => {
   const [communityEvents, setCommunityEvents] = useState([
     {
       id: buildEventId(),
-      title: 'Monthly Blood Drive',
+      title: 'মাসিক রক্তদান কর্মসূচি',
       date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString().slice(0, 10),
-      location: 'Community Hall',
-      details: 'Coordinate donor outreach and transport support.',
+      location: 'কমিউনিটি হল',
+      details: 'রক্তদাতা যোগাযোগ ও পরিবহন সহায়তা সমন্বয়।',
     },
   ]);
   const [eventForm, setEventForm] = useState({
@@ -73,7 +73,7 @@ export const CommunityPage = () => {
                   day: '2-digit',
                   month: 'short',
                 })
-              : 'TBA';
+              : 'তারিখ পরে জানানো হবে';
 
             return `${item.title} - ${createdAt}`;
           });
@@ -91,19 +91,19 @@ export const CommunityPage = () => {
         setUpcomingDrives(
           adminUpdates.length
             ? adminUpdates
-            : ['No upcoming drives published yet. Check again soon.'],
+            : ['এখনও কোনো রক্তদান কর্মসূচি প্রকাশ হয়নি। পরে আবার দেখুন।'],
         );
 
         setVolunteerFocus([
-          `Reactivate inactive donors this month (${inactiveDonorCount.toLocaleString()} pending)`,
-          `Maintain O- readiness (${oNegativeAvailableCount.toLocaleString()} available donors)`,
-          `Review coordination alerts (${unreadCoordinationAlerts.toLocaleString()} unread)`,
+          `এই মাসে নিষ্ক্রিয় রক্তদাতাদের সক্রিয় করুন (${inactiveDonorCount.toLocaleString('bn-BD')} বাকি)`,
+          `O- প্রস্তুতি রাখুন (${oNegativeAvailableCount.toLocaleString('bn-BD')} জন প্রস্তুত)`,
+          `সমন্বয় অ্যালার্ট দেখুন (${unreadCoordinationAlerts.toLocaleString('bn-BD')}টি অপঠিত)`,
         ]);
       } catch (requestError) {
         if (isMounted) {
-          setError(requestError?.response?.data?.message || 'Failed to load community coordination data.');
-          setUpcomingDrives(['Unable to load upcoming drives at the moment.']);
-          setVolunteerFocus(['Unable to load volunteer focus priorities right now.']);
+          setError(requestError?.response?.data?.message || 'কমিউনিটি তথ্য লোড করা যায়নি।');
+          setUpcomingDrives(['এই মুহূর্তে কর্মসূচি লোড করা যাচ্ছে না।']);
+          setVolunteerFocus(['এই মুহূর্তে অগ্রাধিকার তালিকা লোড করা যাচ্ছে না।']);
         }
       } finally {
         if (isMounted) {
@@ -123,7 +123,7 @@ export const CommunityPage = () => {
 
   const headerStatus = useMemo(() => {
     if (isLoading) {
-      return 'Refreshing community coordination data...';
+      return 'কমিউনিটি তথ্য রিফ্রেশ হচ্ছে...';
     }
 
     return error || '';
@@ -137,12 +137,12 @@ export const CommunityPage = () => {
     event.preventDefault();
 
     if (!canCreateEvent) {
-      toast.error('You are not allowed to add community events.');
+      toast.error('কমিউনিটি ইভেন্ট যোগ করার অনুমতি নেই।');
       return;
     }
 
     if (!eventForm.title || !eventForm.date || !eventForm.location) {
-      toast.error('Please add a title, date, and location.');
+      toast.error('শিরোনাম, তারিখ ও লোকেশন দিন।');
       return;
     }
 
@@ -158,20 +158,20 @@ export const CommunityPage = () => {
     ]);
 
     setEventForm({ title: '', date: '', location: '', details: '' });
-    toast.success('Community event added.');
+    toast.success('কমিউনিটি ইভেন্ট যোগ হয়েছে।');
   };
 
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Network</p>
-        <h2>Community Coordination</h2>
+        <p className="eyebrow">নেটওয়ার্ক</p>
+        <h2>কমিউনিটি সমন্বয়</h2>
         {headerStatus ? <p className="muted-text">{headerStatus}</p> : null}
       </header>
 
       <div className="panel-grid">
         <article className="panel-card">
-          <h3>Upcoming Drives</h3>
+          <h3>আসন্ন রক্তদান কর্মসূচি</h3>
           <ul className="list-clean">
             {upcomingDrives.map((drive) => (
               <li key={drive}>{drive}</li>
@@ -180,7 +180,7 @@ export const CommunityPage = () => {
         </article>
 
         <article className="panel-card">
-          <h3>Volunteer Focus</h3>
+          <h3>স্বেচ্ছাসেবী অগ্রাধিকার</h3>
           <ul className="list-clean">
             {volunteerFocus.map((item) => (
               <li key={item}>{item}</li>
@@ -190,8 +190,8 @@ export const CommunityPage = () => {
 
         <article className="panel-card">
           <div className="panel-card-header">
-            <h3>Community Events</h3>
-            {canCreateEvent ? <span className="status-pill status-success">Event creator enabled</span> : null}
+            <h3>কমিউনিটি ইভেন্ট</h3>
+            {canCreateEvent ? <span className="status-pill status-success">ইভেন্ট তৈরি চালু</span> : null}
           </div>
 
           <ul className="list-clean community-event-list">
@@ -210,7 +210,7 @@ export const CommunityPage = () => {
             <form className="stack-form community-event-form" onSubmit={submitEvent}>
               <input
                 type="text"
-                placeholder="Event title"
+                placeholder="ইভেন্ট শিরোনাম"
                 value={eventForm.title}
                 onChange={handleEventChange('title')}
               />
@@ -221,21 +221,21 @@ export const CommunityPage = () => {
               />
               <input
                 type="text"
-                placeholder="Event location"
+                placeholder="ইভেন্ট লোকেশন"
                 value={eventForm.location}
                 onChange={handleEventChange('location')}
               />
               <textarea
                 rows="3"
-                placeholder="Event details"
+                placeholder="ইভেন্টের বিস্তারিত"
                 value={eventForm.details}
                 onChange={handleEventChange('details')}
               />
-              <button type="submit" className="primary-button">Add Event</button>
+              <button type="submit" className="primary-button">ইভেন্ট যোগ করুন</button>
             </form>
           ) : (
             <p className="muted-text compact-text">
-              Event creation is available for Super Admin, District Admin, Upazila Admin, Union Leader, and Ward Admin.
+              ইভেন্ট তৈরি শুধু অ্যাডমিনদের জন্য চালু আছে।
             </p>
           )}
         </article>

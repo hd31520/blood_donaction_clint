@@ -5,7 +5,7 @@ const getErrorMessage = (error) => {
     return error.message;
   }
 
-  return 'An unexpected application error occurred.';
+  return 'অ্যাপে অপ্রত্যাশিত সমস্যা হয়েছে।';
 };
 
 export class AppErrorBoundary extends Component {
@@ -49,19 +49,18 @@ export class AppErrorBoundary extends Component {
     return (
       <main className="error-boundary-shell" role="alert" aria-live="assertive">
         <section className="error-boundary-card">
-          <p className="error-boundary-kicker">Something went wrong</p>
-          <h1>We hit an unexpected error.</h1>
+          <p className="error-boundary-kicker">কিছু সমস্যা হয়েছে</p>
+          <h1>অ্যাপে অপ্রত্যাশিত সমস্যা হয়েছে।</h1>
           <p>
-            The app can usually recover after a refresh. If this keeps happening, please contact the
-            admin team.
+            পেজ রিফ্রেশ করলে সাধারণত ঠিক হয়ে যায়। বারবার হলে অ্যাডমিন টিমকে জানান।
           </p>
           <pre className="error-boundary-message">{this.state.errorMessage}</pre>
           <div className="error-boundary-actions">
             <button type="button" className="btn btn-primary" onClick={this.handleReload}>
-              Reload page
+              পেজ রিলোড
             </button>
             <button type="button" className="btn btn-soft" onClick={this.handleGoHome}>
-              Go to home
+              হোমে যান
             </button>
           </div>
         </section>

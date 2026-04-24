@@ -13,7 +13,7 @@ const toMonthOptions = (count = 12) => {
     options.push({
       year: date.getFullYear(),
       month: date.getMonth() + 1,
-      label: date.toLocaleString(undefined, { month: 'long', year: 'numeric' }),
+      label: date.toLocaleString('bn-BD', { month: 'long', year: 'numeric' }),
     });
   }
 
@@ -46,7 +46,7 @@ export const ReportsPage = () => {
         }
       } catch (requestError) {
         if (isMounted) {
-          const message = requestError?.response?.data?.message || 'Failed to load monthly report.';
+          const message = requestError?.response?.data?.message || 'মাসিক রিপোর্ট লোড করা যায়নি।';
           setError(message);
           setReport(null);
         }
@@ -86,7 +86,7 @@ export const ReportsPage = () => {
       document.body.removeChild(anchor);
       URL.revokeObjectURL(objectUrl);
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to export CSV report.');
+      toast.error(requestError?.response?.data?.message || 'CSV রিপোর্ট এক্সপোর্ট করা যায়নি।');
     } finally {
       setIsExporting(false);
     }
@@ -95,10 +95,10 @@ export const ReportsPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Insights</p>
-        <h2>Monthly Reporting</h2>
+        <p className="eyebrow">ইনসাইট</p>
+        <h2>মাসিক রিপোর্ট</h2>
         <label htmlFor="report-period" className="muted-text">
-          Period
+          সময়কাল
         </label>
         <select
           id="report-period"
@@ -124,31 +124,30 @@ export const ReportsPage = () => {
 
       <div className="stats-grid">
         <StatCard
-          title="Activity Rate"
+          title="সক্রিয়তার হার"
           value={isLoading ? '...' : `${activityRate.toFixed(2)}%`}
-          subtitle="Based on active donors this month"
+          subtitle="এই মাসের সক্রিয় রক্তদাতার ভিত্তিতে"
         />
         <StatCard
-          title="Avg / Active Donor"
+          title="গড় / সক্রিয় রক্তদাতা"
           value={isLoading ? '...' : averagePerActiveDonor.toFixed(2)}
-          subtitle="Donation frequency"
+          subtitle="রক্তদানের ঘনত্ব"
         />
         <StatCard
-          title="Total Donations"
-          value={isLoading ? '...' : totalDonations.toLocaleString()}
-          subtitle="Donations recorded in selected month"
+          title="মোট রক্তদান"
+          value={isLoading ? '...' : totalDonations.toLocaleString('bn-BD')}
+          subtitle="নির্বাচিত মাসের রেকর্ড"
         />
       </div>
 
       <article className="panel-card">
-        <h3>Export Center</h3>
+        <h3>এক্সপোর্ট সেন্টার</h3>
         <p>
-          Export monthly reports in CSV format and share with district, upazila, and union teams for
-          planning campaigns.
+          মাসিক রিপোর্ট CSV ফরম্যাটে এক্সপোর্ট করে জেলা, উপজেলা ও ইউনিয়ন টিমের সাথে শেয়ার করুন।
         </p>
         {error ? <p className="auth-error">{error}</p> : null}
         <button type="button" onClick={exportCsv} disabled={isLoading || isExporting || Boolean(error)}>
-          {isExporting ? 'Exporting...' : `Export ${selectedPeriod.label} Report`}
+          {isExporting ? 'এক্সপোর্ট হচ্ছে...' : `${selectedPeriod.label} রিপোর্ট এক্সপোর্ট`}
         </button>
       </article>
     </section>

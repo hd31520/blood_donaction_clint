@@ -23,7 +23,7 @@ export const LoginPage = () => {
 
     try {
       const user = await login({ email, password });
-      toast.success('Login successful.');
+      toast.success('লগইন সফল হয়েছে।');
       const fallbackPath = getRoleDefaultPath(user?.role);
       const nextPath = location.state?.from?.pathname || fallbackPath;
       navigate(nextPath, { replace: true });
@@ -58,38 +58,51 @@ export const LoginPage = () => {
 
   return (
     <section className="auth-page reveal">
-      <article className="auth-card">
-        <p className="eyebrow">Welcome Back</p>
-        <h2>Login to Bangla Blood</h2>
+      <article className="auth-card auth-card-login">
+        <div className="auth-brand-row">
+          <span className="auth-brand-mark">BB</span>
+          <div>
+            <p className="eyebrow">স্বাগতম</p>
+            <h2>বাংলা ব্লাডে লগইন করুন</h2>
+          </div>
+        </div>
+        <p className="auth-subtitle">রক্তদাতা, রোগী ও দায়িত্বশীল টিমের জন্য নিরাপদ অ্যাক্সেস।</p>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <label htmlFor="loginEmail">Email</label>
+        <form onSubmit={handleSubmit} className="auth-form" aria-describedby={error ? 'loginError' : undefined}>
+          <label htmlFor="loginEmail">ইমেইল</label>
           <input
             id="loginEmail"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            inputMode="email"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'loginError' : undefined}
             required
           />
 
-          <label htmlFor="loginPassword">Password</label>
+          <label htmlFor="loginPassword">পাসওয়ার্ড</label>
           <input
             id="loginPassword"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'loginError' : undefined}
             required
           />
 
-          {error ? <p className="auth-error">{error}</p> : null}
+          {error ? <p id="loginError" className="auth-error">{error}</p> : null}
 
           <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing In...' : 'Login'}
+            {isSubmitting ? 'লগইন হচ্ছে...' : 'লগইন'}
           </button>
         </form>
 
         <p className="auth-switch">
-          Need an account? <Link to="/register">Register here</Link>
+          অ্যাকাউন্ট নেই? <Link to="/register">নিবন্ধন করুন</Link>
         </p>
       </article>
     </section>

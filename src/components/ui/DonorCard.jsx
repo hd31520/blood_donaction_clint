@@ -10,14 +10,14 @@ const DonorCardComponent = ({ donor }) => {
       </div>
 
       <p>
-        <strong>Location:</strong> {donor.location}
+        <strong>লোকেশন:</strong> {donor.location}
       </p>
       <p>
-        <strong>Last Donation:</strong> {donor.lastDonationDate}
+        <strong>শেষ রক্তদান:</strong> {donor.lastDonationDate}
       </p>
 
       <Link to={`/donors/${donor.id}`} className="view-btn inline-link-btn">
-        View
+        দেখুন
       </Link>
     </article>
   );

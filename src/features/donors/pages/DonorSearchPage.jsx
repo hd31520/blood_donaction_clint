@@ -5,6 +5,12 @@ import { Link } from 'react-router-dom';
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { donorSearchService } from '../services/donorSearchService.js';
 
+const AVAILABILITY_LABELS = {
+  available: 'প্রস্তুত',
+  unavailable: 'অনুপলব্ধ',
+  temporarily_unavailable: 'সাময়িক অনুপলব্ধ',
+};
+
 export const DonorSearchPage = () => {
   const [bloodGroup, setBloodGroup] = useState('');
   const [availabilityStatus, setAvailabilityStatus] = useState('');
@@ -51,7 +57,7 @@ export const DonorSearchPage = () => {
         setResults(response.data);
         setMeta(response.meta);
       } catch (requestError) {
-        const errorMessage = requestError?.response?.data?.message || 'Failed to search donors.';
+        const errorMessage = requestError?.response?.data?.message || 'রক্তদাতা খুঁজে পাওয়া যায়নি।';
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -79,18 +85,19 @@ export const DonorSearchPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Donor Directory</p>
-        <h2>Find Available Donors</h2>
+        <p className="eyebrow">অ্যাডমিন তালিকা</p>
+        <h2>রক্তদাতা তালিকা</h2>
+        <p className="muted-text">এই তালিকা শুধু ইউনিয়ন/ওয়ার্ড দায়িত্বশীল ও উচ্চতর অ্যাডমিনদের জন্য।</p>
       </header>
 
       <div className="toolbar">
-        <label htmlFor="bloodGroup">Blood Group</label>
+        <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
         <select
           id="bloodGroup"
           value={bloodGroup}
           onChange={(event) => setBloodGroup(event.target.value)}
         >
-          <option value="">All</option>
+          <option value="">সব</option>
           <option value="A+">A+</option>
           <option value="A-">A-</option>
           <option value="B+">B+</option>
@@ -101,20 +108,20 @@ export const DonorSearchPage = () => {
           <option value="O-">O-</option>
         </select>
 
-        <label htmlFor="availabilityStatus">Availability</label>
+        <label htmlFor="availabilityStatus">প্রাপ্যতা</label>
         <select
           id="availabilityStatus"
           value={availabilityStatus}
           onChange={(event) => setAvailabilityStatus(event.target.value)}
         >
-          <option value="">All</option>
-          <option value="available">Available</option>
-          <option value="unavailable">Unavailable</option>
-          <option value="temporarily_unavailable">Temporarily Unavailable</option>
+          <option value="">সব</option>
+          <option value="available">প্রস্তুত</option>
+          <option value="unavailable">অনুপলব্ধ</option>
+          <option value="temporarily_unavailable">সাময়িক অনুপলব্ধ</option>
         </select>
 
         <button type="button" className="inline-link-btn" onClick={clearFilters}>
-          Clear Filters
+          ফিল্টার মুছুন
         </button>
       </div>
 
@@ -134,26 +141,26 @@ export const DonorSearchPage = () => {
       />
 
       {error ? <p className="auth-error">{error}</p> : null}
-      {isLoading ? <p className="page-loader">Loading donors...</p> : null}
+      {isLoading ? <p className="page-loader">রক্তদাতা লোড হচ্ছে...</p> : null}
 
       <div className="table-card donor-table-card">
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Blood Group</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Contact</th>
-              <th>Chat</th>
+              <th>নাম</th>
+              <th>রক্তের গ্রুপ</th>
+              <th>লোকেশন</th>
+              <th>অবস্থা</th>
+              <th>যোগাযোগ</th>
+              <th>চ্যাট</th>
             </tr>
           </thead>
           <tbody>
             {results.map((donorProfile) => (
               <tr key={donorProfile.id}>
-                <td data-label="Name">{donorProfile.donor?.name || 'N/A'}</td>
-                <td data-label="Blood Group">{donorProfile.bloodGroup}</td>
-                <td data-label="Location">
+                <td data-label="নাম">{donorProfile.donor?.name || 'উল্লেখ নেই'}</td>
+                <td data-label="রক্তের গ্রুপ">{donorProfile.bloodGroup}</td>
+                <td data-label="লোকেশন">
                   {donorProfile.donor?.locationNames
                     ? [
                         donorProfile.donor.locationNames.division,
@@ -163,31 +170,31 @@ export const DonorSearchPage = () => {
                       ]
                         .filter(Boolean)
                         .join(' / ')
-                    : donorProfile.donor?.location || 'N/A'}
+                    : donorProfile.donor?.location || 'উল্লেখ নেই'}
                 </td>
-                <td data-label="Status">
+                <td data-label="অবস্থা">
                   <span className={`status-chip ${donorProfile.availabilityStatus}`}>
-                    {donorProfile.availabilityStatus}
+                    {AVAILABILITY_LABELS[donorProfile.availabilityStatus] || donorProfile.availabilityStatus}
                   </span>
                 </td>
-                <td data-label="Contact">{donorProfile.donor?.phone || 'Hidden'}</td>
-                <td data-label="Chat">
+                <td data-label="যোগাযোগ">{donorProfile.donor?.phone || 'গোপন'}</td>
+                <td data-label="চ্যাট">
                   {donorProfile.donor?.contactPreferences?.allowDonorChat !== false && donorProfile.donor?.phone ? (
                     <Link
                       className="inline-link-btn"
                       to={`/chat?targetUserId=${encodeURIComponent(String(donorProfile.userId || ''))}`}
                     >
-                      Chat
+                      চ্যাট
                     </Link>
                   ) : (
-                    <span className="muted-text">Not available</span>
+                    <span className="muted-text">চালু নেই</span>
                   )}
                 </td>
               </tr>
             ))}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={6}>No donors found for selected filters.</td>
+                <td colSpan={6}>এই ফিল্টারে কোনো রক্তদাতা পাওয়া যায়নি।</td>
               </tr>
             ) : null}
           </tbody>
@@ -196,7 +203,7 @@ export const DonorSearchPage = () => {
 
       {meta ? (
         <p className="auth-switch">
-          Showing {results.length} of {meta.total} donors
+          মোট {Number(meta.total || 0).toLocaleString('bn-BD')} জনের মধ্যে {results.length.toLocaleString('bn-BD')} জন দেখানো হচ্ছে
         </p>
       ) : null}
     </section>

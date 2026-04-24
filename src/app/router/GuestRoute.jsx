@@ -7,7 +7,7 @@ export const GuestRoute = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
-    return <div className="page-loader">Loading...</div>;
+    return <div className="page-loader">লোড হচ্ছে...</div>;
   }
 
   if (isAuthenticated) {

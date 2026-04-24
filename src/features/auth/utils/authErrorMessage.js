@@ -1,8 +1,8 @@
 const LOCATION_FIELD_LABELS = {
-  divisionId: 'division',
-  districtId: 'district',
-  upazilaId: 'upazila',
-  unionId: 'union',
+  divisionId: 'বিভাগ',
+  districtId: 'জেলা',
+  upazilaId: 'উপজেলা',
+  unionId: 'ইউনিয়ন',
 };
 
 const isServiceUnavailable = (status) => status === 503;
@@ -14,8 +14,8 @@ const getLocationSelectionError = (serverMessage) => {
   }
 
   const field = match[1];
-  const readableField = LOCATION_FIELD_LABELS[field] || 'location';
-  return `Selected ${readableField} is not available on server yet. Please reselect your location and try again.`;
+  const readableField = LOCATION_FIELD_LABELS[field] || 'লোকেশন';
+  return `নির্বাচিত ${readableField} সার্ভারে পাওয়া যাচ্ছে না। আবার লোকেশন নির্বাচন করে চেষ্টা করুন।`;
 };
 
 export const getAuthErrorMessage = ({
@@ -25,18 +25,18 @@ export const getAuthErrorMessage = ({
   hasResponse,
   isTimeout,
 }) => {
-  const actionLabel = mode === 'register' ? 'Registration' : 'Login';
+  const actionLabel = mode === 'register' ? 'নিবন্ধন' : 'লগইন';
 
   if (!hasResponse) {
     if (isTimeout) {
-      return `${actionLabel} is taking too long. Server may be waking up, please try again in a few seconds.`;
+      return `${actionLabel} করতে বেশি সময় লাগছে। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।`;
     }
 
-    return `${actionLabel} failed due to a network/CORS issue. Please check your internet and try again.`;
+    return `${actionLabel} নেটওয়ার্ক সমস্যার কারণে ব্যর্থ হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।`;
   }
 
   if (isServiceUnavailable(status)) {
-    return serverMessage || 'Server is temporarily unavailable. Please try again in a few seconds.';
+    return 'সার্ভারের ডেটাবেস সংযোগ প্রস্তুত হচ্ছে। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।';
   }
 
   if (status === 400) {
@@ -46,19 +46,19 @@ export const getAuthErrorMessage = ({
     }
 
     return mode === 'register'
-      ? serverMessage || 'Please check your information and try again.'
-      : serverMessage || 'Login request is invalid. Please check your input and try again.';
+      ? serverMessage || 'তথ্যগুলো দেখে আবার চেষ্টা করুন।'
+      : serverMessage || 'লগইন তথ্য ঠিক নেই। আবার চেষ্টা করুন।';
   }
 
   if (status === 401) {
-    return 'Invalid email or password.';
+    return 'ইমেইল বা পাসওয়ার্ড সঠিক নয়।';
   }
 
   if (status === 409 && mode === 'register') {
-    return 'An account with this email already exists. Please login instead.';
+    return 'এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে। লগইন করুন।';
   }
 
   return serverMessage || (mode === 'register'
-    ? 'Registration failed. Please try again.'
-    : 'Login failed. Please check your credentials.');
+    ? 'নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।'
+    : 'লগইন ব্যর্থ হয়েছে। তথ্য যাচাই করুন।');
 };

@@ -8,7 +8,7 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
 
   if (isLoading) {
-    return <div className="page-loader">Loading...</div>;
+    return <div className="page-loader">লোড হচ্ছে...</div>;
   }
 
   if (!isAuthenticated) {

@@ -31,25 +31,12 @@ export const donorSearchService = {
       params.unionId = filters.unionId;
     }
 
-    // Try public search endpoint first (works for everyone)
-    try {
-      const response = await apiClient.get('/donor-profiles/public/search', { params });
-      return {
-        data: response.data?.data || [],
-        meta: response.data?.meta || null,
-      };
-    } catch (error) {
-      // Fall back to authenticated search if available
-      try {
-        const response = await apiClient.get('/donor-profiles/search', { params });
-        return {
-          data: response.data?.data || [],
-          meta: response.data?.meta || null,
-        };
-      } catch (fallbackError) {
-        throw error;
-      }
-    }
+    const response = await apiClient.get('/donor-profiles/search', { params });
+
+    return {
+      data: response.data?.data || [],
+      meta: response.data?.meta || null,
+    };
   },
 
   searchAuthenticated: async (filters = {}) => {
@@ -97,7 +84,7 @@ export const donorSearchService = {
   },
 
   getPublicByUserId: async (userId) => {
-    const response = await apiClient.get(`/donor-profiles/public/${userId}`);
+    const response = await apiClient.get(`/donor-profiles/user/${userId}`);
 
     return response.data?.data || null;
   },

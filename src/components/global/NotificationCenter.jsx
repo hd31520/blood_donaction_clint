@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useNotifications } from '../../features/notifications/context/NotificationContext.jsx';
 
 const typeLabelMap = {
-  donation_request: 'Donation Request',
-  donation_approval: 'Donation Approval',
-  admin_update: 'Admin Update',
+  donation_request: 'রক্তের অনুরোধ',
+  donation_approval: 'রক্তদান অনুমোদন',
+  admin_update: 'অ্যাডমিন আপডেট',
 };
 
 export const NotificationCenter = () => {
@@ -36,25 +36,25 @@ export const NotificationCenter = () => {
       {isOpen ? (
         <div className="notification-panel">
           <header className="notification-header">
-            <h4>Notifications</h4>
+            <h4>নোটিফিকেশন</h4>
             <div className="notification-actions">
               <button type="button" onClick={refreshNotifications}>
-                Refresh
+                রিফ্রেশ
               </button>
               <button type="button" onClick={markAllAsRead}>
-                <CheckCheck size={14} /> Mark all read
+                <CheckCheck size={14} /> সব পড়া হয়েছে
               </button>
             </div>
           </header>
 
           <div className="notification-body">
-            {isLoading ? <p className="notification-empty">Loading notifications...</p> : null}
+            {isLoading ? <p className="notification-empty">নোটিফিকেশন লোড হচ্ছে...</p> : null}
 
             {!isLoading && notifications.length === 0 ? (
               <div className="notification-empty-wrap">
-                <p className="notification-empty">No notifications yet.</p>
+                <p className="notification-empty">এখনও কোনো নোটিফিকেশন নেই।</p>
                 <button type="button" onClick={seedDemo}>
-                  Create Demo Notifications
+                  ডেমো নোটিফিকেশন তৈরি করুন
                 </button>
               </div>
             ) : null}
@@ -72,10 +72,10 @@ export const NotificationCenter = () => {
                     <span className="notification-type">{typeLabelMap[notification.type]}</span>
                     <p className="notification-message">{notification.message}</p>
                     <div className="notification-item-actions">
-                      <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                      <small>{new Date(notification.createdAt).toLocaleString('bn-BD')}</small>
                       {!notification.isRead ? (
                         <button type="button" onClick={() => markAsRead(notification.id)}>
-                          Mark read
+                          পড়া হয়েছে
                         </button>
                       ) : null}
                     </div>

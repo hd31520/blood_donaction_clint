@@ -28,7 +28,30 @@ export const AppProviders = () => {
       <AuthProvider>
         <NotificationProvider>
           <AppRouter />
-          <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                border: '1px solid #dbe1d7',
+                borderRadius: '12px',
+                color: '#1b2c2c',
+                boxShadow: '0 18px 36px rgba(20, 39, 39, 0.14)',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#2a7d5f',
+                  secondary: '#ffffff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#c13232',
+                  secondary: '#ffffff',
+                },
+              },
+            }}
+          />
           <GlobalWatermark
             brandText={watermarkText}
             tagline={watermarkTagline}

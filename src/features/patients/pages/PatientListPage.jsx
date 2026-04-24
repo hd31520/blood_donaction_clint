@@ -8,14 +8,20 @@ import { donorSearchService } from '../../donors/services/donorSearchService.js'
 import { patientService } from '../services/patientService.js';
 
 const STATUS_OPTIONS = ['pending', 'in_progress', 'fulfilled', 'cancelled'];
+const STATUS_LABELS = {
+  pending: 'অপেক্ষমাণ',
+  in_progress: 'চলমান',
+  fulfilled: 'সম্পন্ন',
+  cancelled: 'বাতিল',
+};
 const MEDICAL_CONDITION_OPTIONS = [
-  { value: 'none', label: 'One-time need' },
-  { value: 'thalassemia', label: 'Thalassemia (regular blood needed)' },
-  { value: 'other_regular', label: 'Other regular blood need' },
+  { value: 'none', label: 'একবারের প্রয়োজন' },
+  { value: 'thalassemia', label: 'থ্যালাসেমিয়া (নিয়মিত রক্ত লাগে)' },
+  { value: 'other_regular', label: 'অন্যান্য নিয়মিত প্রয়োজন' },
 ];
 
 export const PatientListPage = () => {
-  const { user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [patientName, setPatientName] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [status, setStatus] = useState('');
@@ -68,6 +74,7 @@ export const PatientListPage = () => {
       divisionId: locationFilters.divisionId,
       districtId: locationFilters.districtId,
       upazilaId: locationFilters.upazilaId,
+      unionId: locationFilters.unionId,
       page: 1,
       limit: 20,
     }),
@@ -78,6 +85,7 @@ export const PatientListPage = () => {
       locationFilters.divisionId,
       locationFilters.districtId,
       locationFilters.upazilaId,
+      locationFilters.unionId,
     ],
   );
 
@@ -119,7 +127,7 @@ export const PatientListPage = () => {
         setResults(response.data);
         setMeta(response.meta);
       } catch (requestError) {
-        const errorMessage = requestError?.response?.data?.message || 'Failed to load patients.';
+        const errorMessage = requestError?.response?.data?.message || 'তালিকা লোড করা যায়নি।';
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -134,6 +142,11 @@ export const PatientListPage = () => {
 
   useEffect(() => {
     const loadHospitals = async () => {
+      if (!isAuthenticated || !isCreateOpen) {
+        setHospitalOptions([]);
+        return;
+      }
+
       try {
         const data = await patientService.listHospitals({
           divisionId: createLocation.divisionId,
@@ -147,7 +160,13 @@ export const PatientListPage = () => {
     };
 
     loadHospitals();
-  }, [createLocation.divisionId, createLocation.districtId, createLocation.upazilaId]);
+  }, [
+    createLocation.divisionId,
+    createLocation.districtId,
+    createLocation.upazilaId,
+    isAuthenticated,
+    isCreateOpen,
+  ]);
 
   const clearFilters = () => {
     setPatientName('');
@@ -192,12 +211,12 @@ export const PatientListPage = () => {
     event.preventDefault();
 
     if (!createForm.patientName || !createForm.patientAge || !createForm.bloodGroup || !createForm.contactPhone || !createForm.requiredDate) {
-      toast.error('Please fill required patient fields.');
+      toast.error('রোগীর প্রয়োজনীয় তথ্য পূরণ করুন।');
       return;
     }
 
     if (!createLocation.divisionId || !createLocation.districtId || !createLocation.upazilaId) {
-      toast.error('Please select division, district, and upazila.');
+      toast.error('বিভাগ, জেলা ও উপজেলা নির্বাচন করুন।');
       return;
     }
 
@@ -227,7 +246,7 @@ export const PatientListPage = () => {
         medicalCondition: createForm.needsRegularBlood ? createForm.medicalCondition : 'none',
       });
 
-      toast.success('Patient added successfully.');
+      toast.success('রক্তের অনুরোধ পাঠানো হয়েছে।');
       resetCreateForm();
       setIsCreateOpen(false);
 
@@ -235,7 +254,7 @@ export const PatientListPage = () => {
       setResults(response.data);
       setMeta(response.meta);
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to add patient.');
+      toast.error(requestError?.response?.data?.message || 'রক্তের অনুরোধ পাঠানো যায়নি।');
     } finally {
       setIsSubmitting(false);
     }
@@ -244,27 +263,33 @@ export const PatientListPage = () => {
   return (
     <section className="feature-page reveal patient-page">
       <header className="feature-header">
-        <p className="eyebrow">Patient Directory</p>
-        <h2>Patient List</h2>
-        <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen((prev) => !prev)}>
-          {isCreateOpen ? 'Close Add Patient' : 'Add Patient'}
-        </button>
+        <p className="eyebrow">রক্তের প্রয়োজন</p>
+        <h2>রোগী ও রক্তের অনুরোধের তালিকা</h2>
+        {isAuthenticated ? (
+          <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen((prev) => !prev)}>
+            {isCreateOpen ? 'ফর্ম বন্ধ করুন' : 'রক্তের অনুরোধ দিন'}
+          </button>
+        ) : (
+          <Link to="/login" className="inline-link-btn">
+            অনুরোধ দিতে লগইন করুন
+          </Link>
+        )}
       </header>
 
-      {isCreateOpen ? (
+      {isAuthenticated && isCreateOpen ? (
         <form className="table-card patient-create-card" onSubmit={submitCreatePatient}>
-          <h3>Add Patient</h3>
+          <h3>রক্তের অনুরোধ দিন</h3>
 
           <div className="toolbar patient-toolbar">
-            <label htmlFor="newPatientName">Patient Name</label>
+            <label htmlFor="newPatientName">রোগীর নাম</label>
             <input
               id="newPatientName"
               value={createForm.patientName}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, patientName: event.target.value }))}
-              placeholder="Patient full name"
+              placeholder="রোগীর পূর্ণ নাম"
             />
 
-            <label htmlFor="newPatientAge">Age</label>
+            <label htmlFor="newPatientAge">বয়স</label>
             <input
               id="newPatientAge"
               type="number"
@@ -274,13 +299,13 @@ export const PatientListPage = () => {
               onChange={(event) => setCreateForm((prev) => ({ ...prev, patientAge: event.target.value }))}
             />
 
-            <label htmlFor="newBloodGroup">Blood Group</label>
+            <label htmlFor="newBloodGroup">রক্তের গ্রুপ</label>
             <select
               id="newBloodGroup"
               value={createForm.bloodGroup}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, bloodGroup: event.target.value }))}
             >
-              <option value="">Select</option>
+              <option value="">নির্বাচন করুন</option>
               <option value="A+">A+</option>
               <option value="A-">A-</option>
               <option value="B+">B+</option>
@@ -291,7 +316,7 @@ export const PatientListPage = () => {
               <option value="O-">O-</option>
             </select>
 
-            <label htmlFor="newUnitsRequired">Units Required</label>
+            <label htmlFor="newUnitsRequired">ব্যাগ প্রয়োজন</label>
             <input
               id="newUnitsRequired"
               type="number"
@@ -300,13 +325,13 @@ export const PatientListPage = () => {
               onChange={(event) => setCreateForm((prev) => ({ ...prev, unitsRequired: event.target.value }))}
             />
 
-            <label htmlFor="newHospital">Hospital</label>
+            <label htmlFor="newHospital">হাসপাতাল</label>
             <select
               id="newHospital"
               value={createForm.hospitalId}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, hospitalId: event.target.value }))}
             >
-              <option value="">Select hospital</option>
+              <option value="">হাসপাতাল নির্বাচন করুন</option>
               {hospitalOptions.map((hospital) => (
                 <option key={hospital.id} value={hospital.id}>
                   {hospital.name}
@@ -314,19 +339,19 @@ export const PatientListPage = () => {
               ))}
             </select>
 
-            <label htmlFor="newUrgency">Urgency</label>
+            <label htmlFor="newUrgency">জরুরিতা</label>
             <select
               id="newUrgency"
               value={createForm.urgencyLevel}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, urgencyLevel: event.target.value }))}
             >
-              <option value="low">low</option>
-              <option value="medium">medium</option>
-              <option value="high">high</option>
-              <option value="critical">critical</option>
+              <option value="low">কম</option>
+              <option value="medium">মাঝারি</option>
+              <option value="high">জরুরি</option>
+              <option value="critical">অতি জরুরি</option>
             </select>
 
-            <label htmlFor="newContactPhone">Contact Phone</label>
+            <label htmlFor="newContactPhone">যোগাযোগ নম্বর</label>
             <input
               id="newContactPhone"
               value={createForm.contactPhone}
@@ -334,14 +359,14 @@ export const PatientListPage = () => {
               placeholder="01XXXXXXXXX"
             />
 
-            <label htmlFor="newContactPerson">Contact Person</label>
+            <label htmlFor="newContactPerson">যোগাযোগের ব্যক্তি</label>
             <input
               id="newContactPerson"
               value={createForm.contactPerson}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, contactPerson: event.target.value }))}
             />
 
-            <label htmlFor="newRequiredDate">Required Date</label>
+            <label htmlFor="newRequiredDate">প্রয়োজনের তারিখ</label>
             <input
               id="newRequiredDate"
               type="date"
@@ -367,7 +392,7 @@ export const PatientListPage = () => {
           />
 
           <div className="toolbar patient-toolbar">
-            <label htmlFor="newNeedsRegularBlood">Regular Blood Need</label>
+            <label htmlFor="newNeedsRegularBlood">নিয়মিত রক্ত লাগে</label>
             <input
               id="newNeedsRegularBlood"
               type="checkbox"
@@ -381,7 +406,7 @@ export const PatientListPage = () => {
               }
             />
 
-            <label htmlFor="newMedicalCondition">Condition</label>
+            <label htmlFor="newMedicalCondition">অবস্থা</label>
             <select
               id="newMedicalCondition"
               value={createForm.medicalCondition}
@@ -395,14 +420,14 @@ export const PatientListPage = () => {
               ))}
             </select>
 
-            <label htmlFor="newDescription">Description</label>
+            <label htmlFor="newDescription">বিবরণ</label>
             <input
               id="newDescription"
               value={createForm.description}
               onChange={(event) => setCreateForm((prev) => ({ ...prev, description: event.target.value }))}
             />
 
-            <label htmlFor="newNotes">Notes</label>
+            <label htmlFor="newNotes">নোট</label>
             <input
               id="newNotes"
               value={createForm.notes}
@@ -410,28 +435,28 @@ export const PatientListPage = () => {
             />
 
             <button type="submit" className="inline-link-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Submit Patient'}
+              {isSubmitting ? 'পাঠানো হচ্ছে...' : 'অনুরোধ পাঠান'}
             </button>
           </div>
         </form>
       ) : null}
 
       <div className="toolbar patient-toolbar">
-        <label htmlFor="patientName">Patient Name</label>
+        <label htmlFor="patientName">রোগীর নাম</label>
         <input
           id="patientName"
           value={patientName}
           onChange={(event) => setPatientName(event.target.value)}
-          placeholder="Search by patient name"
+          placeholder="রোগীর নামে খুঁজুন"
         />
 
-        <label htmlFor="bloodGroup">Blood Group</label>
+        <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
         <select
           id="bloodGroup"
           value={bloodGroup}
           onChange={(event) => setBloodGroup(event.target.value)}
         >
-          <option value="">All</option>
+          <option value="">সব</option>
           <option value="A+">A+</option>
           <option value="A-">A-</option>
           <option value="B+">B+</option>
@@ -442,18 +467,18 @@ export const PatientListPage = () => {
           <option value="O-">O-</option>
         </select>
 
-        <label htmlFor="status">Status</label>
+        <label htmlFor="status">অবস্থা</label>
         <select id="status" value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">All</option>
+          <option value="">সব</option>
           {STATUS_OPTIONS.map((item) => (
             <option key={item} value={item}>
-              {item}
+              {STATUS_LABELS[item] || item}
             </option>
           ))}
         </select>
 
         <button type="button" className="inline-link-btn" onClick={clearFilters}>
-          Clear Filters
+          ফিল্টার মুছুন
         </button>
       </div>
 
@@ -473,30 +498,30 @@ export const PatientListPage = () => {
       />
 
       {error ? <p className="auth-error">{error}</p> : null}
-      {isLoading ? <p className="page-loader">Loading patients...</p> : null}
+      {isLoading ? <p className="page-loader">তালিকা লোড হচ্ছে...</p> : null}
 
       <div className="table-card patient-table-card">
         <table>
           <thead>
             <tr>
-              <th>Patient</th>
-              <th>Blood Group</th>
-              <th>Need</th>
-              <th>Hospital</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Contact</th>
-              <th>Chat</th>
+              <th>রোগী</th>
+              <th>রক্তের গ্রুপ</th>
+              <th>ব্যাগ</th>
+              <th>হাসপাতাল</th>
+              <th>লোকেশন</th>
+              <th>অবস্থা</th>
+              <th>যোগাযোগ</th>
+              <th>চ্যাট</th>
             </tr>
           </thead>
           <tbody>
             {results.map((patient) => (
               <tr key={patient.id}>
-                <td data-label="Patient">{patient.patientName}</td>
-                <td data-label="Blood Group">{patient.bloodGroup}</td>
-                <td data-label="Need">{patient.unitsReceived}/{patient.unitsRequired}</td>
-                <td data-label="Hospital">{patient.hospital?.name || patient.hospitalName || 'N/A'}</td>
-                <td data-label="Location">
+                <td data-label="রোগী">{patient.patientName}</td>
+                <td data-label="রক্তের গ্রুপ">{patient.bloodGroup}</td>
+                <td data-label="ব্যাগ">{patient.unitsReceived}/{patient.unitsRequired}</td>
+                <td data-label="হাসপাতাল">{patient.hospital?.name || patient.hospitalName || 'উল্লেখ নেই'}</td>
+                <td data-label="লোকেশন">
                   {[
                     patient.locationNames?.division,
                     patient.locationNames?.district,
@@ -505,29 +530,31 @@ export const PatientListPage = () => {
                     patient.locationNames?.area,
                   ]
                     .filter(Boolean)
-                    .join(' / ') || 'N/A'}
+                    .join(' / ') || 'উল্লেখ নেই'}
                 </td>
-                <td data-label="Status">
-                  <span className={`status-chip ${patient.status}`}>{patient.status}</span>
+                <td data-label="অবস্থা">
+                  <span className={`status-chip ${patient.status}`}>
+                    {STATUS_LABELS[patient.status] || patient.status}
+                  </span>
                 </td>
-                <td data-label="Contact">{patient.contactPhone || 'N/A'}</td>
-                <td data-label="Chat">
+                <td data-label="যোগাযোগ">{patient.contactPhone || 'উল্লেখ নেই'}</td>
+                <td data-label="চ্যাট">
                   {canUsePatientChat && patient.requestedBy?.id ? (
                     <Link
                       className="inline-link-btn"
                       to={`/chat?targetUserId=${encodeURIComponent(String(patient.requestedBy.id))}&patientId=${encodeURIComponent(String(patient.id))}`}
                     >
-                      Chat
+                      চ্যাট
                     </Link>
                   ) : (
-                    <span className="muted-text">Not available</span>
+                    <span className="muted-text">চালু নেই</span>
                   )}
                 </td>
               </tr>
             ))}
             {!isLoading && results.length === 0 ? (
               <tr>
-                <td colSpan={8}>No patients found for selected filters.</td>
+                <td colSpan={8}>এই ফিল্টারে কোনো অনুরোধ পাওয়া যায়নি।</td>
               </tr>
             ) : null}
           </tbody>
@@ -536,7 +563,7 @@ export const PatientListPage = () => {
 
       {meta ? (
         <p className="auth-switch">
-          Showing {results.length} of {meta.total} patients
+          মোট {Number(meta.total || 0).toLocaleString('bn-BD')}টি অনুরোধের মধ্যে {results.length.toLocaleString('bn-BD')}টি দেখানো হচ্ছে
         </p>
       ) : null}
     </section>

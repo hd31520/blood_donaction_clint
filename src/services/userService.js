@@ -1,6 +1,28 @@
 import { apiClient } from './apiClient';
 
 export const userService = {
+  getPublicLocalAdmins: async (filters = {}) => {
+    const params = {};
+
+    if (filters.divisionId) {
+      params.divisionId = filters.divisionId;
+    }
+
+    if (filters.districtId) {
+      params.districtId = filters.districtId;
+    }
+
+    if (filters.upazilaId) {
+      params.upazilaId = filters.upazilaId;
+    }
+
+    if (filters.unionId) {
+      params.unionId = filters.unionId;
+    }
+
+    const response = await apiClient.get('/users/public/local-admins', { params });
+    return response.data?.data || [];
+  },
   getUserManagementMeta: async () => {
     const response = await apiClient.get('/users/meta');
     return response.data;

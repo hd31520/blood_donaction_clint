@@ -74,7 +74,7 @@ export const RoleManagementPage = () => {
         role: data.defaultCreateRole || data.assignableRoles?.[0] || previous.role || '',
       }));
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to load role metadata.');
+      toast.error(requestError?.response?.data?.message || 'Role তথ্য লোড করা যায়নি।');
     } finally {
       setIsMetaLoading(false);
     }
@@ -95,7 +95,7 @@ export const RoleManagementPage = () => {
       });
       setRoleDrafts(drafts);
     } catch (requestError) {
-      const message = requestError?.response?.data?.message || 'Failed to load users.';
+      const message = requestError?.response?.data?.message || 'ইউজার তালিকা লোড করা যায়নি।';
       setError(message);
       toast.error(message);
     } finally {
@@ -145,29 +145,29 @@ export const RoleManagementPage = () => {
     event.preventDefault();
 
     if (!form.name || !form.email || !form.password || !form.bloodGroup) {
-      toast.error('Please fill in the required user fields.');
+      toast.error('ইউজারের প্রয়োজনীয় তথ্য পূরণ করুন।');
       return;
     }
 
     if (!allowedRoles.includes(form.role)) {
-      toast.error('You cannot assign that role from your account.');
+      toast.error('আপনার অ্যাকাউন্ট থেকে এই role দেওয়া যাবে না।');
       return;
     }
 
     if (!form.divisionId || !form.districtId || !form.upazilaId) {
-      toast.error('Please select division, district, and upazila.');
+      toast.error('বিভাগ, জেলা ও উপজেলা নির্বাচন করুন।');
       return;
     }
 
     const needsAreaType = (managementMeta.rolesRequiringAreaType || []).includes(form.role);
     if (needsAreaType && !form.areaType) {
-      toast.error('Please select a union or pouroshava area type.');
+      toast.error('ইউনিয়ন বা পৌরসভার ধরন নির্বাচন করুন।');
       return;
     }
 
     const needsUnionSelection = (managementMeta.rolesRequiringUnionSelection || []).includes(form.role);
     if (needsUnionSelection && !form.unionId && !form.unionName) {
-      toast.error('Please select a union or enter a union name.');
+      toast.error('ইউনিয়ন নির্বাচন করুন বা ইউনিয়নের নাম লিখুন।');
       return;
     }
 
@@ -191,11 +191,11 @@ export const RoleManagementPage = () => {
         phone: form.phone || undefined,
       });
 
-      toast.success('User created successfully.');
+      toast.success('ইউজার তৈরি হয়েছে।');
       resetCreateForm();
       await loadUsers();
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to create user.');
+      toast.error(requestError?.response?.data?.message || 'ইউজার তৈরি করা যায়নি।');
     } finally {
       setIsSubmitting(false);
     }
@@ -209,19 +209,19 @@ export const RoleManagementPage = () => {
 
     try {
       await userService.updateUserRole(userId, { role: nextRole });
-      toast.success('User role updated.');
+      toast.success('ইউজারের role আপডেট হয়েছে।');
       await loadUsers();
     } catch (requestError) {
-      toast.error(requestError?.response?.data?.message || 'Failed to update user role.');
+      toast.error(requestError?.response?.data?.message || 'ইউজারের role আপডেট করা যায়নি।');
     }
   };
 
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Management</p>
-        <h2>Role Management</h2>
-        <p className="role-scope">Manage users according to your scope and hierarchy permissions.</p>
+        <p className="eyebrow">ব্যবস্থাপনা</p>
+        <h2>Role ব্যবস্থাপনা</h2>
+        <p className="role-scope">আপনার অনুমোদিত এলাকা ও hierarchy অনুযায়ী ইউজার পরিচালনা করুন।</p>
       </header>
 
       <div className="panel-grid">
@@ -235,22 +235,22 @@ export const RoleManagementPage = () => {
       </div>
 
       <article className="panel-card role-management-section">
-        <h3>Create User</h3>
+        <h3>ইউজার তৈরি করুন</h3>
         <form className="profile-form-grid" onSubmit={submitCreateUser}>
           <div className="home-filter-field">
-            <label htmlFor="userName">Name</label>
+            <label htmlFor="userName">নাম</label>
             <input id="userName" value={form.name} onChange={handleCreateChange('name')} />
           </div>
           <div className="home-filter-field">
-            <label htmlFor="userEmail">Email</label>
+            <label htmlFor="userEmail">ইমেইল</label>
             <input id="userEmail" type="email" value={form.email} onChange={handleCreateChange('email')} />
           </div>
           <div className="home-filter-field">
-            <label htmlFor="userPassword">Password</label>
+            <label htmlFor="userPassword">পাসওয়ার্ড</label>
             <input id="userPassword" type="password" value={form.password} onChange={handleCreateChange('password')} />
           </div>
           <div className="home-filter-field">
-            <label htmlFor="userBloodGroup">Blood Group</label>
+            <label htmlFor="userBloodGroup">রক্তের গ্রুপ</label>
             <select id="userBloodGroup" value={form.bloodGroup} onChange={handleCreateChange('bloodGroup')}>
               <option value="A+">A+</option>
               <option value="A-">A-</option>
@@ -266,7 +266,7 @@ export const RoleManagementPage = () => {
             <label htmlFor="userRole">Role</label>
             <select id="userRole" value={form.role} onChange={handleCreateChange('role')} disabled={isMetaLoading || allowedRoles.length === 0}>
               {allowedRoles.length === 0 ? (
-                <option value="">No assignable roles</option>
+                <option value="">দেওয়ার মতো role নেই</option>
               ) : (
                 allowedRoles.map((role) => (
                   <option key={role} value={role}>{formatRoleLabel(role)}</option>
@@ -275,11 +275,11 @@ export const RoleManagementPage = () => {
             </select>
           </div>
           <div className="home-filter-field">
-            <label htmlFor="userPhone">Phone</label>
+            <label htmlFor="userPhone">মোবাইল</label>
             <input id="userPhone" value={form.phone} onChange={handleCreateChange('phone')} />
           </div>
           <div className="home-filter-field profile-full-width">
-            <label htmlFor="userLocation">Location</label>
+            <label htmlFor="userLocation">ঠিকানা</label>
             <input id="userLocation" value={form.location} onChange={handleCreateChange('location')} />
           </div>
           <div className="profile-full-width">
@@ -293,40 +293,40 @@ export const RoleManagementPage = () => {
           </div>
           <div className="profile-full-width role-management-actions">
             <button type="submit" disabled={isSubmitting || isMetaLoading || allowedRoles.length === 0} className="inline-link-btn">
-              {isSubmitting ? 'Creating...' : 'Create User'}
+              {isSubmitting ? 'তৈরি হচ্ছে...' : 'ইউজার তৈরি করুন'}
             </button>
           </div>
         </form>
       </article>
 
       <article className="panel-card role-management-section">
-        <h3>Scoped Users</h3>
-        {isLoading ? <p className="muted-text">Loading users...</p> : null}
+        <h3>আপনার এলাকার ইউজার</h3>
+        {isLoading ? <p className="muted-text">ইউজার লোড হচ্ছে...</p> : null}
         {error ? <p className="auth-error">{error}</p> : null}
         <div className="table-card role-management-table-card">
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
+                <th>নাম</th>
+                <th>ইমেইল</th>
                 <th>Role</th>
-                <th>Location</th>
-                <th>Change Role</th>
-                <th>Action</th>
+                <th>লোকেশন</th>
+                <th>Role পরিবর্তন</th>
+                <th>অ্যাকশন</th>
               </tr>
             </thead>
             <tbody>
               {users.map((item) => (
                 <tr key={item.id}>
-                  <td data-label="Name">{item.name}</td>
-                  <td data-label="Email">{item.email}</td>
+                  <td data-label="নাম">{item.name}</td>
+                  <td data-label="ইমেইল">{item.email}</td>
                   <td data-label="Role">{formatRoleLabel(item.role)}</td>
-                  <td data-label="Location">
+                  <td data-label="লোকেশন">
                     {[item.locationNames?.division, item.locationNames?.district, item.locationNames?.upazila, item.locationNames?.union]
                       .filter(Boolean)
-                      .join(' / ') || 'N/A'}
+                      .join(' / ') || 'উল্লেখ নেই'}
                   </td>
-                  <td data-label="Change Role">
+                  <td data-label="Role পরিবর্তন">
                     <select
                       value={roleDrafts[item.id] || item.role}
                       onChange={(event) =>
@@ -341,16 +341,16 @@ export const RoleManagementPage = () => {
                       ))}
                     </select>
                   </td>
-                  <td data-label="Action">
+                  <td data-label="অ্যাকশন">
                     <button type="button" className="inline-link-btn" onClick={() => submitRoleUpdate(item.id)}>
-                      Save Role
+                      Role সংরক্ষণ
                     </button>
                   </td>
                 </tr>
               ))}
               {!isLoading && users.length === 0 ? (
                 <tr>
-                  <td colSpan={6}>No users found in your scope.</td>
+                  <td colSpan={6}>আপনার এলাকায় কোনো ইউজার পাওয়া যায়নি।</td>
                 </tr>
               ) : null}
             </tbody>

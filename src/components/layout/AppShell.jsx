@@ -43,16 +43,16 @@ export const AppShell = () => {
 
       <aside id="mobile-sidebar" className={`sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
         <div className="brand-block">
-          <h1>Bangla Blood</h1>
-          <p>Smart donor operations platform</p>
+          <h1>বাংলা ব্লাড</h1>
+          <p>রক্ত সহায়তার দায়িত্বশীল প্ল্যাটফর্ম</p>
         </div>
 
         <div className="user-chip">
           {user?.profileImageUrl ? (
             <img className="user-chip-avatar" src={user.profileImageUrl} alt={user?.name || 'User'} />
           ) : null}
-          <strong>{user?.name || 'User'}</strong>
-          <span>{user?.role || 'guest'}</span>
+          <strong>{user?.name || 'ব্যবহারকারী'}</strong>
+          <span>{user?.roleLabel || user?.role || 'অতিথি'}</span>
         </div>
 
         <NotificationCenter />
@@ -77,7 +77,7 @@ export const AppShell = () => {
             logout();
           }}
         >
-          Logout
+          লগআউট
         </button>
       </aside>
 
@@ -86,21 +86,21 @@ export const AppShell = () => {
           <button
             type="button"
             className="mobile-menu-toggle"
-            aria-label={isSidebarOpen ? 'Close sidebar menu' : 'Open sidebar menu'}
+            aria-label={isSidebarOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
             aria-controls="mobile-sidebar"
             aria-expanded={isSidebarOpen}
             onClick={() => setIsSidebarOpen((previous) => !previous)}
           >
             {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-            <span>{isSidebarOpen ? 'Close' : 'Menu'}</span>
+            <span>{isSidebarOpen ? 'বন্ধ' : 'মেনু'}</span>
           </button>
 
           <div>
-            <p className="eyebrow">Bangladesh Blood Network</p>
-            <h2>Bangla Blood</h2>
+            <p className="eyebrow">বাংলাদেশ ব্লাড নেটওয়ার্ক</p>
+            <h2>বাংলা ব্লাড</h2>
           </div>
           <Link to="/home" className="inline-link-btn">
-            Home
+            হোম
           </Link>
           <NotificationCenter />
         </header>

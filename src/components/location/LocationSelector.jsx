@@ -282,7 +282,7 @@ export const LocationSelector = ({
       const matchedDivision = findByCandidates(divisions, divisionCandidates);
       if (!matchedDivision) {
         setAutoDetectMessage(
-          'Current location found, but it did not match a division. Please select the division manually.',
+          'বর্তমান লোকেশন পাওয়া গেছে, কিন্তু বিভাগ মিলেনি। অনুগ্রহ করে বিভাগ নির্বাচন করুন।',
         );
         return;
       }
@@ -294,9 +294,9 @@ export const LocationSelector = ({
       });
 
       setPendingAutoDistrictCandidates(districtCandidates);
-      setAutoDetectMessage('Division preselected from current location.');
+      setAutoDetectMessage('বর্তমান লোকেশন থেকে বিভাগ নির্বাচন করা হয়েছে।');
     } catch (detectError) {
-      setAutoDetectMessage(detectError?.message || 'Location permission denied or unavailable.');
+      setAutoDetectMessage(detectError?.message || 'লোকেশন অনুমতি পাওয়া যায়নি বা লোকেশন চালু নেই।');
     } finally {
       setIsAutoDetecting(false);
       setAutoDetectAttempted();
@@ -333,7 +333,7 @@ export const LocationSelector = ({
       unionName: '',
       wardNumber: '',
     });
-    setAutoDetectMessage('Division and district preselected from current location.');
+    setAutoDetectMessage('বর্তমান লোকেশন থেকে বিভাগ ও জেলা নির্বাচন করা হয়েছে।');
     setPendingAutoDistrictCandidates([]);
   }, [pendingAutoDistrictCandidates, selectedDivision, districts, selectedDistrict]);
 
@@ -357,7 +357,7 @@ export const LocationSelector = ({
   const unionOptions = useMemo(() => {
     return filteredUnions.map((item) => {
       const itemAreaType = getAreaType(item);
-      const typeLabel = itemAreaType === 'pouroshava' ? 'Pouroshava' : 'Union';
+      const typeLabel = itemAreaType === 'pouroshava' ? 'পৌরসভা' : 'ইউনিয়ন';
       const nameLabel = item.bnName ? `${item.name} (${item.bnName})` : item.name;
 
       return {
@@ -386,13 +386,13 @@ export const LocationSelector = ({
     hasUnionRecords
       ? {
           value: 'union',
-          label: 'Union (Rural)',
+          label: 'ইউনিয়ন',
         }
       : null,
     hasPouroshavaRecords
       ? {
           value: 'pouroshava',
-          label: 'Pouroshava (Urban)',
+          label: 'পৌরসভা',
         }
       : null,
   ].filter(Boolean);
@@ -473,10 +473,10 @@ export const LocationSelector = ({
     mode !== 'filter';
 
   const unionEmptyMessage = !hasAnyAreaRecords
-    ? 'No area records available for this upazila'
+    ? 'এই উপজেলার কোনো এলাকা পাওয়া যায়নি'
     : selectedAreaType === 'pouroshava'
-      ? 'No pouroshava records found for this upazila'
-      : 'No union records found for this upazila';
+      ? 'এই উপজেলার কোনো পৌরসভা পাওয়া যায়নি'
+      : 'এই উপজেলার কোনো ইউনিয়ন পাওয়া যায়নি';
 
   const emitChange = (nextIds) => {
     const locationNames = getLocationNames({
@@ -624,7 +624,7 @@ export const LocationSelector = ({
             onClick={applyAutoDetectedLocation}
             disabled={isAutoDetecting}
           >
-            {isAutoDetecting ? 'Detecting location...' : 'Use Current Location'}
+            {isAutoDetecting ? 'লোকেশন শনাক্ত হচ্ছে...' : 'বর্তমান লোকেশন ব্যবহার করুন'}
           </button>
           {autoDetectMessage ? <span className="location-autofill-message">{autoDetectMessage}</span> : null}
         </div>
@@ -634,13 +634,13 @@ export const LocationSelector = ({
         <div className="error-message location-error-inline">
           <span>{error}</span>
           <button type="button" className="retry-inline-btn" onClick={retryCurrentLevel}>
-            Retry
+            আবার চেষ্টা করুন
           </button>
         </div>
       ) : null}
 
       <div className="location-select-wrapper">
-        <label htmlFor={`${idPrefix}DivisionSelect`}>Division</label>
+        <label htmlFor={`${idPrefix}DivisionSelect`}>বিভাগ</label>
         <select
           id={`${idPrefix}DivisionSelect`}
           value={selectedDivision}
@@ -650,10 +650,10 @@ export const LocationSelector = ({
         >
           <option value="">
             {isLoadingDivisions
-              ? 'Loading divisions...'
+              ? 'বিভাগ লোড হচ্ছে...'
               : isFilterMode
-                ? 'All Divisions'
-                : 'Select Division First'}
+                ? 'সব বিভাগ'
+                : 'আগে বিভাগ নির্বাচন করুন'}
           </option>
           {divisions.map((division) => (
             <option key={division.id} value={division.id}>
@@ -665,7 +665,7 @@ export const LocationSelector = ({
 
       <div className="location-select-wrapper">
         <label htmlFor={`${idPrefix}DistrictSelect`}>
-          District {isLoadingDistricts && <span className="loading-indicator">Loading...</span>}
+          জেলা {isLoadingDistricts && <span className="loading-indicator">লোড হচ্ছে...</span>}
         </label>
         <select
           id={`${idPrefix}DistrictSelect`}
@@ -676,10 +676,10 @@ export const LocationSelector = ({
         >
           <option value="">
             {!selectedDivision
-              ? 'Select Division First'
+              ? 'আগে বিভাগ নির্বাচন করুন'
               : isFilterMode
-                ? 'All Districts'
-                : 'Select District'}
+                ? 'সব জেলা'
+                : 'জেলা নির্বাচন করুন'}
           </option>
           {districts.map((district) => (
             <option key={district.id} value={district.id}>
@@ -691,7 +691,7 @@ export const LocationSelector = ({
 
       <div className="location-select-wrapper">
         <label htmlFor={`${idPrefix}UpazilaSelect`}>
-          Upazila {isLoadingUpazilas && <span className="loading-indicator">Loading...</span>}
+          উপজেলা {isLoadingUpazilas && <span className="loading-indicator">লোড হচ্ছে...</span>}
         </label>
         <select
           id={`${idPrefix}UpazilaSelect`}
@@ -702,10 +702,10 @@ export const LocationSelector = ({
         >
           <option value="">
             {!selectedDistrict
-              ? 'Select District First'
+              ? 'আগে জেলা নির্বাচন করুন'
               : isFilterMode
-                ? 'All Upazilas'
-                : 'Select Upazila'}
+                ? 'সব উপজেলা'
+                : 'উপজেলা নির্বাচন করুন'}
           </option>
           {upazilas.map((upazila) => (
             <option key={upazila.id} value={upazila.id}>
@@ -717,9 +717,9 @@ export const LocationSelector = ({
 
       <div className="location-select-wrapper">
         <label htmlFor={`${idPrefix}AreaTypeSelect`}>
-          Area Type{' '}
+          এলাকার ধরন{' '}
           {(isLoadingUnions || isLoadingPouroshavas) && (
-            <span className="loading-indicator">Loading...</span>
+            <span className="loading-indicator">লোড হচ্ছে...</span>
           )}
         </label>
         <select
@@ -735,14 +735,14 @@ export const LocationSelector = ({
         >
           <option value="">
             {!hasValidUpazilaSelection
-              ? 'Select Upazila First'
+              ? 'আগে উপজেলা নির্বাচন করুন'
               : isLoadingUnions || isLoadingPouroshavas
-                ? 'Loading area types...'
+                ? 'এলাকার ধরন লোড হচ্ছে...'
                 : areaTypeOptions.length > 1
-                  ? 'Select Area Type'
+                  ? 'এলাকার ধরন নির্বাচন করুন'
                   : areaTypeOptions.length === 1
                     ? areaTypeOptions[0].label
-                    : 'No area types found'}
+                    : 'এলাকার ধরন পাওয়া যায়নি'}
           </option>
           {shouldShowAreaTypeSelector
             ? areaTypeOptions.map((option) => (
@@ -755,7 +755,7 @@ export const LocationSelector = ({
 
         {selectedAreaType === 'pouroshava' && mode !== 'filter' ? (
           <>
-            <label htmlFor={`${idPrefix}WardNumberInput`}>Ward Number</label>
+            <label htmlFor={`${idPrefix}WardNumberInput`}>ওয়ার্ড নম্বর</label>
             <input
               id={`${idPrefix}WardNumberInput`}
               type="number"
@@ -764,7 +764,7 @@ export const LocationSelector = ({
               className="location-search-input"
               value={selectedWardNumber}
               onChange={handleWardNumberChange}
-              placeholder="Enter ward number"
+              placeholder="ওয়ার্ড নম্বর লিখুন"
               required={required}
             />
           </>
@@ -773,12 +773,12 @@ export const LocationSelector = ({
 
       <div className="location-select-wrapper">
         <label htmlFor={`${idPrefix}UnionSelect`}>
-          Area Name{' '}
-          {isLoadingSelectedAreaType && <span className="loading-indicator">Loading...</span>}
+          এলাকার নাম{' '}
+          {isLoadingSelectedAreaType && <span className="loading-indicator">লোড হচ্ছে...</span>}
         </label>
 
         {hasValidUpazilaSelection && isLoadingSelectedAreaType ? (
-          <div className="location-union-loading">Loading selected area options...</div>
+          <div className="location-union-loading">নির্বাচিত এলাকার অপশন লোড হচ্ছে...</div>
         ) : null}
 
         {shouldRenderUnionDropdown ? (
@@ -807,8 +807,8 @@ export const LocationSelector = ({
             placeholder={
               hasMatchingUnionRecords
                 ? selectedAreaType === 'pouroshava'
-                  ? 'Search or select Pouroshava'
-                  : 'Search or select Union'
+                  ? 'পৌরসভা খুঁজুন বা নির্বাচন করুন'
+                  : 'ইউনিয়ন খুঁজুন বা নির্বাচন করুন'
                 : unionEmptyMessage
             }
             isDisabled={isUnionDropdownDisabled}
@@ -819,8 +819,8 @@ export const LocationSelector = ({
             noOptionsMessage={() =>
               showUnionSearch && unionSearch
                 ? selectedAreaType === 'pouroshava'
-                  ? 'No pouroshava matches your search'
-                  : 'No union matches your search'
+                  ? 'এই নামে কোনো পৌরসভা পাওয়া যায়নি'
+                  : 'এই নামে কোনো ইউনিয়ন পাওয়া যায়নি'
                 : unionEmptyMessage
             }
           />
@@ -830,8 +830,8 @@ export const LocationSelector = ({
           <>
             <label htmlFor={`${idPrefix}ManualUnionInput`}>
               {selectedAreaType === 'pouroshava'
-                ? 'Pouroshava Name (if not listed)'
-                : 'Union Name (if not listed)'}
+                ? 'পৌরসভার নাম (তালিকায় না থাকলে)'
+                : 'ইউনিয়নের নাম (তালিকায় না থাকলে)'}
             </label>
             <input
               id={`${idPrefix}ManualUnionInput`}
@@ -841,8 +841,8 @@ export const LocationSelector = ({
               onChange={handleManualUnionChange}
               placeholder={
                 selectedAreaType === 'pouroshava'
-                  ? 'Not listed? Type your pouroshava name'
-                  : 'Not listed? Type your union $ pouroshava name'
+                  ? 'তালিকায় না থাকলে পৌরসভার নাম লিখুন'
+                  : 'তালিকায় না থাকলে ইউনিয়নের নাম লিখুন'
               }
               required={required && !selectedUnion}
             />

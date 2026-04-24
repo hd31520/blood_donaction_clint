@@ -55,7 +55,7 @@ export const ChatPage = () => {
         }
       } catch (requestError) {
         if (isMounted) {
-          setError(requestError?.response?.data?.message || 'Failed to load chats.');
+          setError(requestError?.response?.data?.message || 'চ্যাট লোড করা যায়নি।');
         }
       } finally {
         if (isMounted) {
@@ -90,7 +90,7 @@ export const ChatPage = () => {
         }
       } catch (requestError) {
         if (isMounted) {
-          setError(requestError?.response?.data?.message || 'Failed to load messages.');
+          setError(requestError?.response?.data?.message || 'মেসেজ লোড করা যায়নি।');
         }
       } finally {
         if (isMounted) {
@@ -132,7 +132,7 @@ export const ChatPage = () => {
       await refreshThreads();
     } catch (requestError) {
       setDraft(content);
-      setError(requestError?.response?.data?.message || 'Failed to send message.');
+      setError(requestError?.response?.data?.message || 'মেসেজ পাঠানো যায়নি।');
     } finally {
       setIsSending(false);
     }
@@ -141,16 +141,16 @@ export const ChatPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Communication</p>
-        <h2>Chat</h2>
+        <p className="eyebrow">যোগাযোগ</p>
+        <h2>চ্যাট</h2>
       </header>
 
       {error ? <p className="auth-error">{error}</p> : null}
 
       <div className="panel-grid chat-layout">
         <article className="panel-card chat-thread-panel">
-          <h3>Conversations</h3>
-          {isLoadingThreads ? <p className="muted-text">Loading threads...</p> : null}
+          <h3>কথোপকথন</h3>
+          {isLoadingThreads ? <p className="muted-text">চ্যাট লোড হচ্ছে...</p> : null}
           <ul className="list-clean chat-thread-list">
             {threads.map((thread) => (
               <li key={thread.id} className="chat-thread-item">
@@ -159,25 +159,25 @@ export const ChatPage = () => {
                   className={`inline-link-btn chat-thread-btn ${String(thread.id) === String(activeThreadId) ? 'active' : ''}`}
                   onClick={() => setActiveThreadId(String(thread.id))}
                 >
-                  {thread.otherParticipant?.name || 'User'}
+                  {thread.otherParticipant?.name || 'ব্যবহারকারী'}
                 </button>
-                <p className="muted-text chat-thread-preview">{thread.lastMessagePreview || 'No messages yet'}</p>
+                <p className="muted-text chat-thread-preview">{thread.lastMessagePreview || 'এখনও মেসেজ নেই'}</p>
               </li>
             ))}
           </ul>
           {!isLoadingThreads && threads.length === 0 ? (
-            <p className="muted-text">No chats yet. Start from donor or patient list.</p>
+            <p className="muted-text">এখনও কোনো চ্যাট নেই। রোগী বা রক্তদাতা তালিকা থেকে শুরু করুন।</p>
           ) : null}
         </article>
 
         <article className="panel-card chat-messages-panel">
-          <h3>{activeThread ? `Chat with ${activeThread.otherParticipant?.name || 'User'}` : 'Messages'}</h3>
+          <h3>{activeThread ? `${activeThread.otherParticipant?.name || 'ব্যবহারকারী'} এর সাথে চ্যাট` : 'মেসেজ'}</h3>
 
           <div className="chat-message-scroll">
-            {isLoadingMessages ? <p className="muted-text">Loading messages...</p> : null}
+            {isLoadingMessages ? <p className="muted-text">মেসেজ লোড হচ্ছে...</p> : null}
 
             {!isLoadingMessages && messages.length === 0 ? (
-              <p className="muted-text">No messages yet. Say hello.</p>
+              <p className="muted-text">এখনও মেসেজ নেই। প্রথম মেসেজ পাঠান।</p>
             ) : null}
 
             {messages.map((message) => {
@@ -188,7 +188,7 @@ export const ChatPage = () => {
                   <div className={`chat-message-bubble ${isMine ? 'mine' : 'other'}`}>
                     <p>{message.content}</p>
                     <p className="muted-text chat-message-meta">
-                      {message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}
+                      {message.createdAt ? new Date(message.createdAt).toLocaleString('bn-BD') : ''}
                     </p>
                   </div>
                 </div>
@@ -197,17 +197,17 @@ export const ChatPage = () => {
           </div>
 
           <form onSubmit={handleSendMessage} className="toolbar chat-composer">
-            <label htmlFor="chatMessage" className="chat-composer-label">Message</label>
+            <label htmlFor="chatMessage" className="chat-composer-label">মেসেজ</label>
             <input
               id="chatMessage"
               className="chat-composer-input"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder={activeThreadId ? 'Type a message' : 'Select a conversation'}
+              placeholder={activeThreadId ? 'মেসেজ লিখুন' : 'একটি কথোপকথন নির্বাচন করুন'}
               disabled={!activeThreadId || isSending}
             />
             <button type="submit" className="inline-link-btn chat-send-btn" disabled={!activeThreadId || !draft.trim() || isSending}>
-              {isSending ? 'Sending...' : 'Send'}
+              {isSending ? 'পাঠানো হচ্ছে...' : 'পাঠান'}
             </button>
           </form>
         </article>

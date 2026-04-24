@@ -19,7 +19,7 @@ const PatientListPage = lazy(() => import('../../features/patients/pages/Patient
 const ProfilePage = lazy(() => import('../../features/profile/pages/ProfilePage.jsx').then((module) => ({ default: module.ProfilePage })));
 const ReportsPage = lazy(() => import('../../features/reports/pages/ReportsPage.jsx').then((module) => ({ default: module.ReportsPage })));
 
-const RouteLoader = () => <div className="page-loader">Loading page...</div>;
+const RouteLoader = () => <div className="page-loader">পাতা লোড হচ্ছে...</div>;
 
 export const AppRouter = () => {
   return (
@@ -27,8 +27,30 @@ export const AppRouter = () => {
       <Route
         path="/donors/:donorId"
         element={
+          <ProtectedRoute allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin']}>
+            <Suspense fallback={<RouteLoader />}>
+              <DonorProfilePage />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="/" element={<Navigate to="/home" replace />} />
+
+      <Route
+        path="/home"
+        element={
           <Suspense fallback={<RouteLoader />}>
-            <DonorProfilePage />
+            <HomePage />
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/patients"
+        element={
+          <Suspense fallback={<RouteLoader />}>
+            <PatientListPage />
           </Suspense>
         }
       />
@@ -63,15 +85,7 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/home" replace />} />
-        <Route
-          path="home"
-          element={
-            <Suspense fallback={<RouteLoader />}>
-              <HomePage />
-            </Suspense>
-          }
-        />
+        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route
           path="dashboard"
           element={
@@ -84,7 +98,7 @@ export const AppRouter = () => {
           path="donors"
           element={
             <ProtectedRoute
-              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder']}
+              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin']}
             >
               <Suspense fallback={<RouteLoader />}>
                 <DonorSearchPage />
@@ -120,18 +134,6 @@ export const AppRouter = () => {
             >
               <Suspense fallback={<RouteLoader />}>
                 <ChatPage />
-              </Suspense>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="patients"
-          element={
-            <ProtectedRoute
-              allowedRoles={['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin', 'donor', 'finder']}
-            >
-              <Suspense fallback={<RouteLoader />}>
-                <PatientListPage />
               </Suspense>
             </ProtectedRoute>
           }
