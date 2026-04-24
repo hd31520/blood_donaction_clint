@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { cachedGet } from '../services/apiClient.js';
 import {
   getPublicDistrictsByDivisionId,
@@ -8,15 +9,7 @@ import {
   getPublicUpazilasByDistrictId,
 } from '../services/locationDataset.js';
 
-const logUnionDebug = (label, payload) => {
-  if (!import.meta.env.DEV) {
-    return;
-  }
-
-  console.log(`[LocationCascade] ${label}`, payload);
-};
-
-const locationStateCache = {
+const cache = {
   divisions: null,
   districtsByDivision: new Map(),
   upazilasByDistrict: new Map(),
@@ -24,78 +17,27 @@ const locationStateCache = {
   pouroshavasByUpazila: new Map(),
 };
 
-const pendingRequests = {
-  divisions: null,
-  districtsByDivision: new Map(),
-  upazilasByDistrict: new Map(),
-  unionsByUpazila: new Map(),
-  pouroshavasByUpazila: new Map(),
+const apiGet = async (url) => {
+  const response = await cachedGet(url, { ttlMs: 5 * 60 * 1000 });
+  return response?.data?.data || [];
 };
 
-const EXPECTED_DIVISION_COUNT = 8;
-
-const withPublicDatasetFallback = async ({ apiLoader, publicLoader, fallbackMessage, requestSeq, currentSeqRef, onFallback }) => {
+const preferPublicDataset = async (publicLoader, apiLoader) => {
   try {
-    const apiData = await apiLoader();
-
-    if (Array.isArray(apiData) && apiData.length === 0) {
-      const publicData = await publicLoader();
-      if (Array.isArray(publicData) && publicData.length > 0) {
-        onFallback?.(publicData);
-        console.warn(fallbackMessage, 'API returned an empty list.');
-        return publicData;
-      }
-    }
-
-    return apiData;
-  } catch (apiError) {
-    try {
-      const publicData = await publicLoader();
-      onFallback?.(publicData);
-      console.warn(fallbackMessage, apiError);
+    const publicData = await publicLoader();
+    if (Array.isArray(publicData) && publicData.length > 0) {
       return publicData;
-    } catch (publicError) {
-      if (requestSeq !== currentSeqRef.current) {
-        return [];
-      }
-
-      throw apiError ?? publicError;
     }
-  }
-};
-
-const getOrCreatePendingRequest = (map, key, fetcher) => {
-  const existingRequest = map.get(key);
-  if (existingRequest) {
-    return existingRequest;
+  } catch (error) {
+    console.warn('[LocationCascade] public dataset unavailable, trying API', error);
   }
 
-  const request = (async () => {
-    try {
-      return await fetcher();
-    } finally {
-      map.delete(key);
-    }
-  })();
-
-  map.set(key, request);
-  return request;
-};
-
-const useDebouncedValue = (value, delayMs = 300) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebouncedValue(value);
-    }, delayMs);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [value, delayMs]);
-
-  return debouncedValue;
+  try {
+    return await apiLoader();
+  } catch (error) {
+    console.warn('[LocationCascade] API location fallback failed', error);
+    return [];
+  }
 };
 
 export const useLocationCascade = () => {
@@ -111,9 +53,6 @@ export const useLocationCascade = () => {
   const [selectedAreaType, setSelectedAreaType] = useState('');
   const [selectedUnion, setSelectedUnion] = useState('');
 
-  const debouncedDivision = useDebouncedValue(selectedDivision, 320);
-  const debouncedDistrict = useDebouncedValue(selectedDistrict, 320);
-
   const [isLoadingDivisions, setIsLoadingDivisions] = useState(true);
   const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
   const [isLoadingUpazilas, setIsLoadingUpazilas] = useState(false);
@@ -121,498 +60,206 @@ export const useLocationCascade = () => {
   const [isLoadingPouroshavas, setIsLoadingPouroshavas] = useState(false);
   const [hasLoadedUnions, setHasLoadedUnions] = useState(false);
   const [hasLoadedPouroshavas, setHasLoadedPouroshavas] = useState(false);
-
   const [error, setError] = useState('');
 
-  const districtRequestSeqRef = useRef(0);
-  const upazilaRequestSeqRef = useRef(0);
-  const unionRequestSeqRef = useRef(0);
-  const pouroshavaRequestSeqRef = useRef(0);
+  const requestSeq = useRef({ division: 0, district: 0, upazila: 0, union: 0, pouroshava: 0 });
 
-  const getErrorMessage = (fallback, err) => {
-    return err?.response?.data?.message || fallback;
-  };
-
-  const loadDivisions = async (forceRefresh = false) => {
-    if (!forceRefresh && locationStateCache.divisions) {
-      setDivisions(locationStateCache.divisions);
+  const loadDivisions = useCallback(async (forceRefresh = false) => {
+    if (!forceRefresh && cache.divisions) {
+      setDivisions(cache.divisions);
       setIsLoadingDivisions(false);
       return;
     }
 
-    try {
-      setIsLoadingDivisions(true);
-      setError('');
+    setIsLoadingDivisions(true);
+    setError('');
 
-      const loadRequest =
-        !forceRefresh && pendingRequests.divisions
-          ? pendingRequests.divisions
-          : (async () => {
-              try {
-                const response = await cachedGet('/locations/divisions', { ttlMs: 5 * 60 * 1000 });
-                return response?.data?.data || [];
-              } finally {
-                pendingRequests.divisions = null;
-              }
-            })();
+    const data = await preferPublicDataset(
+      getPublicDivisions,
+      () => apiGet('/locations/divisions'),
+    );
 
-      if (!forceRefresh && !pendingRequests.divisions) {
-        pendingRequests.divisions = loadRequest;
-      }
-
-      const data = await withPublicDatasetFallback({
-        apiLoader: () => loadRequest,
-        publicLoader: getPublicDivisions,
-        fallbackMessage: 'Falling back to public location dataset for divisions.',
-        requestSeq: 0,
-        currentSeqRef: districtRequestSeqRef,
-      });
-
-      let finalDivisions = data;
-      if (Array.isArray(data) && data.length > 0 && data.length < EXPECTED_DIVISION_COUNT) {
-        const publicDivisions = await getPublicDivisions();
-        if (Array.isArray(publicDivisions) && publicDivisions.length >= EXPECTED_DIVISION_COUNT) {
-          console.warn(
-            'Division API list is incomplete. Using public Bangladesh location dataset instead.',
-          );
-          finalDivisions = publicDivisions;
-        }
-      }
-
-      locationStateCache.divisions = finalDivisions;
-      setDivisions(finalDivisions);
-    } catch (err) {
-      setError(getErrorMessage('Failed to load divisions', err));
-      console.error('Error loading divisions:', err);
-    } finally {
-      setIsLoadingDivisions(false);
-    }
-  };
-
-  const loadDistrictsByDivision = async (
-    divisionId,
-    { forceRefresh = false, requestSeq = districtRequestSeqRef.current } = {},
-  ) => {
-    const cached = locationStateCache.districtsByDivision.get(divisionId);
-    if (!forceRefresh && cached) {
-      if (requestSeq === districtRequestSeqRef.current) {
-        setDistricts(cached);
-        setIsLoadingDistricts(false);
-      }
-      return;
-    }
-
-    try {
-      setIsLoadingDistricts(true);
-      setError('');
-
-      const loadRequest = forceRefresh
-        ? cachedGet(`/locations/divisions/${divisionId}/districts`, {
-            ttlMs: 5 * 60 * 1000,
-          }).then((response) => response?.data?.data || [])
-        : getOrCreatePendingRequest(pendingRequests.districtsByDivision, divisionId, async () => {
-            const response = await cachedGet(`/locations/divisions/${divisionId}/districts`, {
-              ttlMs: 5 * 60 * 1000,
-            });
-            return response?.data?.data || [];
-          });
-
-      const data = await withPublicDatasetFallback({
-        apiLoader: () => loadRequest,
-        publicLoader: () => getPublicDistrictsByDivisionId(divisionId),
-        fallbackMessage: 'Falling back to public location dataset for districts.',
-        requestSeq,
-        currentSeqRef: districtRequestSeqRef,
-      });
-
-      if (requestSeq !== districtRequestSeqRef.current) {
-        return;
-      }
-
-      locationStateCache.districtsByDivision.set(divisionId, data);
-      setDistricts(data);
-    } catch (err) {
-      if (requestSeq !== districtRequestSeqRef.current) {
-        return;
-      }
-
-      setError(getErrorMessage('Failed to load districts', err));
-      console.error('Error loading districts:', err);
-    } finally {
-      if (requestSeq === districtRequestSeqRef.current) {
-        setIsLoadingDistricts(false);
-      }
-    }
-  };
-
-  const loadUpazilasByDistrictId = async (
-    districtId,
-    { forceRefresh = false, requestSeq = upazilaRequestSeqRef.current } = {},
-  ) => {
-    const cached = locationStateCache.upazilasByDistrict.get(districtId);
-    if (!forceRefresh && cached) {
-      if (requestSeq === upazilaRequestSeqRef.current) {
-        setUpazilas(cached);
-        setIsLoadingUpazilas(false);
-      }
-      return;
-    }
-
-    try {
-      setIsLoadingUpazilas(true);
-      setError('');
-
-      const loadRequest = forceRefresh
-        ? cachedGet(`/locations/districts/${districtId}/upazilas`, {
-            ttlMs: 5 * 60 * 1000,
-          }).then((response) => response?.data?.data || [])
-        : getOrCreatePendingRequest(pendingRequests.upazilasByDistrict, districtId, async () => {
-            const response = await cachedGet(`/locations/districts/${districtId}/upazilas`, {
-              ttlMs: 5 * 60 * 1000,
-            });
-            return response?.data?.data || [];
-          });
-
-      const data = await withPublicDatasetFallback({
-        apiLoader: () => loadRequest,
-        publicLoader: () => getPublicUpazilasByDistrictId(districtId),
-        fallbackMessage: 'Falling back to public location dataset for upazilas.',
-        requestSeq,
-        currentSeqRef: upazilaRequestSeqRef,
-      });
-
-      if (requestSeq !== upazilaRequestSeqRef.current) {
-        return;
-      }
-
-      locationStateCache.upazilasByDistrict.set(districtId, data);
-      setUpazilas(data);
-    } catch (err) {
-      if (requestSeq !== upazilaRequestSeqRef.current) {
-        return;
-      }
-
-      setError(getErrorMessage('Failed to load upazilas', err));
-      console.error('Error loading upazilas:', err);
-    } finally {
-      if (requestSeq === upazilaRequestSeqRef.current) {
-        setIsLoadingUpazilas(false);
-      }
-    }
-  };
-
-  const loadUnionsByUpazilaId = async (
-    upazilaId,
-    { forceRefresh = false, requestSeq = unionRequestSeqRef.current } = {},
-  ) => {
-    logUnionDebug('Preparing unions fetch', {
-      upazilaId,
-      forceRefresh,
-      requestSeq,
-    });
-
-    const cached = locationStateCache.unionsByUpazila.get(upazilaId);
-    const hasCached = Array.isArray(cached);
-
-    if (!forceRefresh && hasCached) {
-      if (requestSeq === unionRequestSeqRef.current) {
-        logUnionDebug('Unions API response data (cached)', {
-          upazilaId,
-          count: cached.length,
-          data: cached,
-        });
-        setUnions(cached);
-        setIsLoadingUnions(false);
-        setHasLoadedUnions(true);
-      }
-      return;
-    }
-
-    try {
-      setIsLoadingUnions(true);
-      setError('');
-
-      const selectedUpazilaNode = upazilas.find((item) => item.id === upazilaId) || null;
-      const selectedDistrictNode = districts.find((item) => item.id === selectedDistrict) || null;
-      const selectedDivisionNode = divisions.find((item) => item.id === selectedDivision) || null;
-
-      logUnionDebug('Unions API request params', {
-        endpoint: `/locations/upazilas/${upazilaId}/unions`,
-        upazilaId,
-        forceRefresh,
-      });
-
-      const loadRequest = forceRefresh
-        ? cachedGet(`/locations/upazilas/${upazilaId}/unions`, {
-            ttlMs: 5 * 60 * 1000,
-          }).then((response) => response?.data?.data || [])
-        : getOrCreatePendingRequest(pendingRequests.unionsByUpazila, upazilaId, async () => {
-            const response = await cachedGet(`/locations/upazilas/${upazilaId}/unions`, {
-              ttlMs: 5 * 60 * 1000,
-            });
-            return response?.data?.data || [];
-          });
-
-      const data = await withPublicDatasetFallback({
-        apiLoader: () => loadRequest,
-        publicLoader: () =>
-          getPublicUnionsByUpazilaId({
-            upazilaId,
-            upazilaName: selectedUpazilaNode?.name,
-            upazilaBnName: selectedUpazilaNode?.bnName,
-            districtName: selectedDistrictNode?.name,
-            districtBnName: selectedDistrictNode?.bnName,
-            divisionName: selectedDivisionNode?.name,
-            divisionBnName: selectedDivisionNode?.bnName,
-          }),
-        fallbackMessage: 'Falling back to public location dataset for unions.',
-        requestSeq,
-        currentSeqRef: unionRequestSeqRef,
-      });
-
-      if (requestSeq !== unionRequestSeqRef.current) {
-        return;
-      }
-
-      logUnionDebug('Unions API response data', {
-        upazilaId,
-        count: data.length,
-        data,
-      });
-
-      locationStateCache.unionsByUpazila.set(upazilaId, data);
-      setUnions(data);
-    } catch (err) {
-      if (requestSeq !== unionRequestSeqRef.current) {
-        return;
-      }
-
-      setError(getErrorMessage('Failed to load unions/pouroshava', err));
-      console.error('Error loading unions:', err);
-    } finally {
-      if (requestSeq === unionRequestSeqRef.current) {
-        setIsLoadingUnions(false);
-        setHasLoadedUnions(true);
-      }
-    }
-  };
-
-  const loadPouroshavasByUpazilaId = async (
-    upazilaId,
-    { forceRefresh = false, requestSeq = pouroshavaRequestSeqRef.current } = {},
-  ) => {
-    const cached = locationStateCache.pouroshavasByUpazila.get(upazilaId);
-    const hasCached = Array.isArray(cached);
-
-    if (!forceRefresh && hasCached) {
-      if (requestSeq === pouroshavaRequestSeqRef.current) {
-        setPouroshavas(cached);
-        setIsLoadingPouroshavas(false);
-        setHasLoadedPouroshavas(true);
-      }
-      return;
-    }
-
-    try {
-      setIsLoadingPouroshavas(true);
-      setError('');
-
-      const selectedUpazilaNode = upazilas.find((item) => item.id === upazilaId) || null;
-      const selectedDistrictNode = districts.find((item) => item.id === selectedDistrict) || null;
-      const selectedDivisionNode = divisions.find((item) => item.id === selectedDivision) || null;
-
-      const loadRequest = forceRefresh
-        ? cachedGet(`/locations/upazilas/${upazilaId}/pouroshavas`, {
-            ttlMs: 5 * 60 * 1000,
-          }).then((response) => response?.data?.data || [])
-        : getOrCreatePendingRequest(
-            pendingRequests.pouroshavasByUpazila,
-            upazilaId,
-            async () => {
-              const response = await cachedGet(`/locations/upazilas/${upazilaId}/pouroshavas`, {
-                ttlMs: 5 * 60 * 1000,
-              });
-              return response?.data?.data || [];
-            },
-          );
-
-      const data = await withPublicDatasetFallback({
-        apiLoader: () => loadRequest,
-        publicLoader: () =>
-          getPublicPouroshavasByCriteria({
-            upazilaId,
-            upazilaName: selectedUpazilaNode?.name,
-            upazilaBnName: selectedUpazilaNode?.bnName,
-            districtName: selectedDistrictNode?.name,
-            districtBnName: selectedDistrictNode?.bnName,
-            divisionName: selectedDivisionNode?.name,
-            divisionBnName: selectedDivisionNode?.bnName,
-          }),
-        fallbackMessage: 'Falling back to public location dataset for pouroshavas.',
-        requestSeq,
-        currentSeqRef: pouroshavaRequestSeqRef,
-      });
-
-      if (requestSeq !== pouroshavaRequestSeqRef.current) {
-        return;
-      }
-
-      locationStateCache.pouroshavasByUpazila.set(upazilaId, data);
-      setPouroshavas(data);
-    } catch (err) {
-      if (requestSeq !== pouroshavaRequestSeqRef.current) {
-        return;
-      }
-
-      setError(getErrorMessage('Failed to load pouroshavas', err));
-      console.error('Error loading pouroshavas:', err);
-    } finally {
-      if (requestSeq === pouroshavaRequestSeqRef.current) {
-        setIsLoadingPouroshavas(false);
-        setHasLoadedPouroshavas(true);
-      }
-    }
-  };
-
-  useEffect(() => {
-    loadDivisions();
+    cache.divisions = data;
+    setDivisions(data);
+    setIsLoadingDivisions(false);
   }, []);
 
-  useEffect(() => {
-    if (!selectedDivision) {
-      setDistricts([]);
-      setSelectedDistrict('');
-      setUpazilas([]);
-      setSelectedUpazilaId('');
-      setUnions([]);
-      setPouroshavas([]);
-      setSelectedAreaType('');
-      setSelectedUnion('');
-      setHasLoadedPouroshavas(false);
-      setError('');
+  const loadDistricts = useCallback(async (divisionId, forceRefresh = false) => {
+    if (!divisionId) return;
+    const seq = requestSeq.current.district + 1;
+    requestSeq.current.district = seq;
+
+    if (!forceRefresh && cache.districtsByDivision.has(divisionId)) {
+      setDistricts(cache.districtsByDivision.get(divisionId));
+      setIsLoadingDistricts(false);
       return;
     }
 
-    setSelectedDistrict('');
-    setUpazilas([]);
-    setSelectedUpazilaId('');
-    setUnions([]);
-    setPouroshavas([]);
-    setSelectedAreaType('');
-    setSelectedUnion('');
-    setHasLoadedPouroshavas(false);
-  }, [selectedDivision]);
+    setIsLoadingDistricts(true);
+    setError('');
 
-  useEffect(() => {
-    if (!debouncedDivision) {
+    const data = await preferPublicDataset(
+      () => getPublicDistrictsByDivisionId(divisionId),
+      () => apiGet(`/locations/divisions/${divisionId}/districts`),
+    );
+
+    if (seq !== requestSeq.current.district) return;
+    cache.districtsByDivision.set(divisionId, data);
+    setDistricts(data);
+    setIsLoadingDistricts(false);
+  }, []);
+
+  const loadUpazilas = useCallback(async (districtId, forceRefresh = false) => {
+    if (!districtId) return;
+    const seq = requestSeq.current.upazila + 1;
+    requestSeq.current.upazila = seq;
+
+    if (!forceRefresh && cache.upazilasByDistrict.has(districtId)) {
+      setUpazilas(cache.upazilasByDistrict.get(districtId));
+      setIsLoadingUpazilas(false);
       return;
     }
 
-    const requestSeq = districtRequestSeqRef.current + 1;
-    districtRequestSeqRef.current = requestSeq;
-    loadDistrictsByDivision(debouncedDivision, { requestSeq });
-  }, [debouncedDivision]);
+    setIsLoadingUpazilas(true);
+    setError('');
 
-  useEffect(() => {
-    if (!selectedDistrict) {
-      setUpazilas([]);
-      setSelectedUpazilaId('');
-      setUnions([]);
-      setPouroshavas([]);
-      setSelectedAreaType('');
-      setSelectedUnion('');
-      setHasLoadedUnions(false);
-      setHasLoadedPouroshavas(false);
-      setError('');
-      return;
-    }
+    const data = await preferPublicDataset(
+      () => getPublicUpazilasByDistrictId(districtId),
+      () => apiGet(`/locations/districts/${districtId}/upazilas`),
+    );
 
-    setSelectedUpazilaId('');
-    setUnions([]);
-    setPouroshavas([]);
-    setSelectedAreaType('');
-    setSelectedUnion('');
+    if (seq !== requestSeq.current.upazila) return;
+    cache.upazilasByDistrict.set(districtId, data);
+    setUpazilas(data);
+    setIsLoadingUpazilas(false);
+  }, []);
+
+  const loadAreas = useCallback(async (upazilaId, forceRefresh = false) => {
+    if (!upazilaId) return;
+    const unionSeq = requestSeq.current.union + 1;
+    const pouroSeq = requestSeq.current.pouroshava + 1;
+    requestSeq.current.union = unionSeq;
+    requestSeq.current.pouroshava = pouroSeq;
+
+    const upazilaNode = upazilas.find((item) => item.id === upazilaId) || null;
+    const districtNode = districts.find((item) => item.id === selectedDistrict) || null;
+    const divisionNode = divisions.find((item) => item.id === selectedDivision) || null;
+    const criteria = {
+      upazilaId,
+      upazilaName: upazilaNode?.name,
+      upazilaBnName: upazilaNode?.bnName,
+      districtName: districtNode?.name,
+      districtBnName: districtNode?.bnName,
+      divisionName: divisionNode?.name,
+      divisionBnName: divisionNode?.bnName,
+    };
+
+    setIsLoadingUnions(true);
+    setIsLoadingPouroshavas(true);
     setHasLoadedUnions(false);
     setHasLoadedPouroshavas(false);
-  }, [selectedDistrict]);
+    setError('');
 
-  useEffect(() => {
-    if (!debouncedDistrict) {
-      return;
-    }
+    const unionPromise = !forceRefresh && cache.unionsByUpazila.has(upazilaId)
+      ? Promise.resolve(cache.unionsByUpazila.get(upazilaId))
+      : preferPublicDataset(
+          () => getPublicUnionsByUpazilaId(criteria),
+          () => apiGet(`/locations/upazilas/${upazilaId}/unions`),
+        );
 
-    const requestSeq = upazilaRequestSeqRef.current + 1;
-    upazilaRequestSeqRef.current = requestSeq;
-    loadUpazilasByDistrictId(debouncedDistrict, { requestSeq });
-  }, [debouncedDistrict]);
+    const pouroPromise = !forceRefresh && cache.pouroshavasByUpazila.has(upazilaId)
+      ? Promise.resolve(cache.pouroshavasByUpazila.get(upazilaId))
+      : preferPublicDataset(
+          () => getPublicPouroshavasByCriteria(criteria),
+          () => apiGet(`/locations/upazilas/${upazilaId}/pouroshavas`),
+        );
 
-  useLayoutEffect(() => {
-    if (!selectedUpazilaId) {
-      setUnions([]);
-      setPouroshavas([]);
-      setSelectedAreaType('');
-      setSelectedUnion('');
+    const [unionData, pouroData] = await Promise.all([unionPromise, pouroPromise]);
+
+    if (unionSeq === requestSeq.current.union) {
+      cache.unionsByUpazila.set(upazilaId, unionData);
+      setUnions(unionData);
       setIsLoadingUnions(false);
-      setIsLoadingPouroshavas(false);
-      setHasLoadedUnions(false);
-      setHasLoadedPouroshavas(false);
-      setError('');
-      return;
+      setHasLoadedUnions(true);
     }
 
-    logUnionDebug('Selected upazilaId', { upazilaId: selectedUpazilaId });
+    if (pouroSeq === requestSeq.current.pouroshava) {
+      cache.pouroshavasByUpazila.set(upazilaId, pouroData);
+      setPouroshavas(pouroData);
+      setIsLoadingPouroshavas(false);
+      setHasLoadedPouroshavas(true);
+    }
+  }, [districts, divisions, selectedDistrict, selectedDivision, upazilas]);
 
-    setUnions([]);
-    setPouroshavas([]);
+  useEffect(() => {
+    loadDivisions().catch(() => {
+      setError('বিভাগ লোড করা যায়নি');
+      setIsLoadingDivisions(false);
+    });
+  }, [loadDivisions]);
+
+  useEffect(() => {
+    setSelectedDistrict('');
+    setSelectedUpazilaId('');
     setSelectedAreaType('');
     setSelectedUnion('');
+    setDistricts([]);
+    setUpazilas([]);
+    setUnions([]);
+    setPouroshavas([]);
     setHasLoadedUnions(false);
     setHasLoadedPouroshavas(false);
-
-    const unionRequestSeq = unionRequestSeqRef.current + 1;
-    unionRequestSeqRef.current = unionRequestSeq;
-    loadUnionsByUpazilaId(selectedUpazilaId, { requestSeq: unionRequestSeq });
-
-    const pouroshavaRequestSeq = pouroshavaRequestSeqRef.current + 1;
-    pouroshavaRequestSeqRef.current = pouroshavaRequestSeq;
-    loadPouroshavasByUpazilaId(selectedUpazilaId, { requestSeq: pouroshavaRequestSeq });
-  }, [selectedUpazilaId]);
-
-  const retryCurrentLevel = async () => {
-    if (selectedUpazilaId) {
-      const unionRequestSeq = unionRequestSeqRef.current + 1;
-      unionRequestSeqRef.current = unionRequestSeq;
-      const pouroshavaRequestSeq = pouroshavaRequestSeqRef.current + 1;
-      pouroshavaRequestSeqRef.current = pouroshavaRequestSeq;
-
-      await Promise.all([
-        loadUnionsByUpazilaId(selectedUpazilaId, {
-          forceRefresh: true,
-          requestSeq: unionRequestSeq,
-        }),
-        loadPouroshavasByUpazilaId(selectedUpazilaId, {
-          forceRefresh: true,
-          requestSeq: pouroshavaRequestSeq,
-        }),
-      ]);
-      return;
-    }
-
-    if (selectedDistrict) {
-      const requestSeq = upazilaRequestSeqRef.current + 1;
-      upazilaRequestSeqRef.current = requestSeq;
-      await loadUpazilasByDistrictId(selectedDistrict, { forceRefresh: true, requestSeq });
-      return;
-    }
 
     if (selectedDivision) {
-      const requestSeq = districtRequestSeqRef.current + 1;
-      districtRequestSeqRef.current = requestSeq;
-      await loadDistrictsByDivision(selectedDivision, { forceRefresh: true, requestSeq });
-      return;
+      loadDistricts(selectedDivision).catch(() => {
+        setError('জেলা লোড করা যায়নি');
+        setIsLoadingDistricts(false);
+      });
     }
+  }, [loadDistricts, selectedDivision]);
 
-    await loadDivisions(true);
+  useEffect(() => {
+    setSelectedUpazilaId('');
+    setSelectedAreaType('');
+    setSelectedUnion('');
+    setUpazilas([]);
+    setUnions([]);
+    setPouroshavas([]);
+    setHasLoadedUnions(false);
+    setHasLoadedPouroshavas(false);
+
+    if (selectedDistrict) {
+      loadUpazilas(selectedDistrict).catch(() => {
+        setError('উপজেলা লোড করা যায়নি');
+        setIsLoadingUpazilas(false);
+      });
+    }
+  }, [loadUpazilas, selectedDistrict]);
+
+  useEffect(() => {
+    setSelectedAreaType('');
+    setSelectedUnion('');
+    setUnions([]);
+    setPouroshavas([]);
+    setHasLoadedUnions(false);
+    setHasLoadedPouroshavas(false);
+
+    if (selectedUpazilaId) {
+      loadAreas(selectedUpazilaId).catch(() => {
+        setError('ইউনিয়ন/পৌরসভা লোড করা যায়নি');
+        setIsLoadingUnions(false);
+        setIsLoadingPouroshavas(false);
+        setHasLoadedUnions(true);
+        setHasLoadedPouroshavas(true);
+      });
+    }
+  }, [loadAreas, selectedUpazilaId]);
+
+  const retryCurrentLevel = async () => {
+    if (selectedUpazilaId) return loadAreas(selectedUpazilaId, true);
+    if (selectedDistrict) return loadUpazilas(selectedDistrict, true);
+    if (selectedDivision) return loadDistricts(selectedDivision, true);
+    return loadDivisions(true);
   };
 
   return {
