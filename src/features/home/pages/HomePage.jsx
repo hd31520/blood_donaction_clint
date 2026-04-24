@@ -121,64 +121,111 @@ export const HomePage = () => {
   };
 
   return (
-    <section className="feature-page reveal home-page-stack public-home">
-      <header className="feature-header public-home-header">
-        <div>
-          <p className="eyebrow">বাংলা ব্লাড</p>
-          <h2>রক্তের প্রয়োজনের পাবলিক তালিকা</h2>
-          <p className="muted-text">
-            যাদের রক্ত প্রয়োজন তাদের তথ্য সবাই দেখতে পারবে। রক্তদাতাদের তালিকা শুধু দায়িত্বশীল
-            অ্যাডমিনদের জন্য সংরক্ষিত।
+    <section className="feature-page reveal home-page-stack public-home startup-home">
+      <header className="startup-hero">
+        <div className="startup-hero-copy">
+          <p className="eyebrow">বাংলাদেশের জন্য কমিউনিটি ব্লাড নেটওয়ার্ক</p>
+          <h1>জরুরি রক্তের অনুরোধ, স্থানীয় দায়িত্বশীল ও donor matching—এক জায়গায়।</h1>
+          <p className="startup-hero-text">
+            বাংলা ব্লাড রোগী, পরিবার, স্থানীয় অ্যাডমিন ও রক্তদাতাদের দ্রুত সংযোগ করায়। Public request দেখা যায়, donor data নিরাপদ থাকে।
           </p>
+          <div className="startup-hero-actions">
+            <Link to="/patients" className="inline-link-btn startup-primary-cta">
+              রক্তের অনুরোধ দিন
+            </Link>
+            <Link to={isAuthenticated ? '/dashboard' : '/login'} className="inline-link-btn ghost-action">
+              {isAuthenticated ? 'ড্যাশবোর্ড খুলুন' : 'লগইন করুন'}
+            </Link>
+          </div>
+          <div className="startup-trust-row" aria-label="Platform highlights">
+            <span>✓ Location-wise request</span>
+            <span>✓ Admin approval</span>
+            <span>✓ WhatsApp/Call support</span>
+          </div>
         </div>
-        <div className="public-home-actions">
-          <Link to="/patients" className="inline-link-btn">
-            রক্তের অনুরোধ দিন
-          </Link>
-          <Link to={isAuthenticated ? '/dashboard' : '/login'} className="inline-link-btn">
-            {isAuthenticated ? 'ড্যাশবোর্ড' : 'লগইন'}
-          </Link>
+
+        <div className="startup-hero-card" aria-label="Live platform summary">
+          <div className="startup-pulse-dot" />
+          <p className="eyebrow">Live overview</p>
+          <h3>{Number(meta?.total || 0).toLocaleString('bn-BD')}টি রক্তের অনুরোধ</h3>
+          <p className="muted-text">বর্তমান filter অনুযায়ী public request tracking</p>
+          <div className="startup-metric-grid">
+            <div>
+              <strong>{bloodNeeds.length.toLocaleString('bn-BD')}</strong>
+              <span>দেখানো হচ্ছে</span>
+            </div>
+            <div>
+              <strong>{localAdmins.length.toLocaleString('bn-BD')}</strong>
+              <span>দায়িত্বশীল</span>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="toolbar patient-toolbar">
-        <label htmlFor="homeBloodGroup">রক্তের গ্রুপ</label>
-        <select id="homeBloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
-          <option value="">সব গ্রুপ</option>
-          {BLOOD_GROUP_OPTIONS.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
+      <section className="startup-feature-strip" aria-label="Key platform features">
+        <article>
+          <span>01</span>
+          <h3>রোগীর request</h3>
+          <p>রক্তের group, hospital, location ও urgency একসাথে দেখা যায়।</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>স্থানীয় admin</h3>
+          <p>Union/Ward দায়িত্বশীলরা request verify ও coordinate করতে পারে।</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Safe donor data</h3>
+          <p>Donor তালিকা public নয়—role-based access দিয়ে protected।</p>
+        </article>
+      </section>
 
-        <label htmlFor="homeStatus">অবস্থা</label>
-        <select id="homeStatus" value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">সব অবস্থা</option>
-          <option value="pending">অপেক্ষমাণ</option>
-          <option value="in_progress">চলমান</option>
-          <option value="fulfilled">সম্পন্ন</option>
-        </select>
+      <section className="table-card startup-filter-card">
+        <header className="panel-card-header">
+          <div>
+            <p className="eyebrow">দ্রুত খুঁজুন</p>
+            <h3>রক্তের অনুরোধ filter করুন</h3>
+          </div>
+          <button type="button" className="inline-link-btn" onClick={clearFilters}>
+            ফিল্টার মুছুন
+          </button>
+        </header>
 
-        <button type="button" className="inline-link-btn" onClick={clearFilters}>
-          ফিল্টার মুছুন
-        </button>
-      </div>
+        <div className="toolbar patient-toolbar">
+          <label htmlFor="homeBloodGroup">রক্তের গ্রুপ</label>
+          <select id="homeBloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
+            <option value="">সব গ্রুপ</option>
+            {BLOOD_GROUP_OPTIONS.map((group) => (
+              <option key={group} value={group}>
+                {group}
+              </option>
+            ))}
+          </select>
 
-      <LocationSelector
-        mode="filter"
-        idPrefix="publicHome"
-        resetKey={locationResetKey}
-        enableAutoDetect={false}
-        onChange={(value) => {
-          setLocationFilters({
-            divisionId: value.divisionId,
-            districtId: value.districtId,
-            upazilaId: value.upazilaId,
-            unionId: value.unionId,
-          });
-        }}
-      />
+          <label htmlFor="homeStatus">অবস্থা</label>
+          <select id="homeStatus" value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option value="">সব অবস্থা</option>
+            <option value="pending">অপেক্ষমাণ</option>
+            <option value="in_progress">চলমান</option>
+            <option value="fulfilled">সম্পন্ন</option>
+          </select>
+        </div>
+
+        <LocationSelector
+          mode="filter"
+          idPrefix="publicHome"
+          resetKey={locationResetKey}
+          enableAutoDetect={false}
+          onChange={(value) => {
+            setLocationFilters({
+              divisionId: value.divisionId,
+              districtId: value.districtId,
+              upazilaId: value.upazilaId,
+              unionId: value.unionId,
+            });
+          }}
+        />
+      </section>
 
       {isLoading ? <p className="page-loader">তালিকা লোড হচ্ছে...</p> : null}
 
