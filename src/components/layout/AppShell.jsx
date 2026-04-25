@@ -42,14 +42,23 @@ export const AppShell = () => {
 
   useEffect(() => {
     if (!isSidebarOpen) {
-      return;
+      return undefined;
     }
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
     return () => {
       document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
     };
   }, [isSidebarOpen]);
 
@@ -59,12 +68,26 @@ export const AppShell = () => {
         <button
           type="button"
           className="sidebar-overlay"
-          aria-label="Close menu"
+          aria-label="মেনু বন্ধ করুন"
           onClick={() => setIsSidebarOpen(false)}
         />
       ) : null}
 
-      <aside id="mobile-sidebar" className={`sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}>
+      <aside
+        id="mobile-sidebar"
+        className={`sidebar ${isSidebarOpen ? 'mobile-open' : ''}`}
+        aria-label="Main navigation"
+      >
+        <button
+          type="button"
+          className="sidebar-close-btn"
+          aria-label="মেনু বন্ধ করুন"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X size={18} />
+          <span>বন্ধ</span>
+        </button>
+
         <div className="brand-block">
           <h1>বাংলা ব্লাড</h1>
           <p>রক্ত সহায়তার দায়িত্বশীল প্ল্যাটফর্ম</p>
