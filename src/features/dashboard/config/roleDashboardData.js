@@ -1,10 +1,10 @@
 const monthlySeries = [
-  { label: 'জানু', value: 18 },
-  { label: 'ফেব', value: 22 },
-  { label: 'মার্চ', value: 26 },
-  { label: 'এপ্রি', value: 29 },
-  { label: 'মে', value: 31 },
-  { label: 'জুন', value: 36 },
+  { label: 'জানু', value: 0 },
+  { label: 'ফেব', value: 0 },
+  { label: 'মার্চ', value: 0 },
+  { label: 'এপ্রি', value: 20 },
+  { label: 'মে', value: 0 },
+  { label: 'জুন', value: 0 },
 ];
 
 export const roleDashboardData = {
@@ -12,9 +12,9 @@ export const roleDashboardData = {
     label: 'সুপার অ্যাডমিন',
     scope: 'সারা দেশের সব জেলা ও এলাকার তথ্য ব্যবস্থাপনা',
     summaries: [
-      { title: 'মোট রক্তদাতা', value: '18,420', subtitle: 'গত মাসের তুলনায় +4.8%' },
-      { title: 'এই মাসে সক্রিয়', value: '10,950', subtitle: '59.5% সক্রিয়তা' },
-      { title: 'জরুরি সাড়া', value: '92%', subtitle: '২০ মিনিটের মধ্যে মিলেছে' },
+      { title: 'মোট রক্তদাতা', value: '0', subtitle: 'গত মাসের তুলনায় 0%' },
+      { title: 'এই মাসে সক্রিয়', value: '0', subtitle: '0% সক্রিয়তা' },
+      { title: 'জরুরি সাড়া', value: '0%', subtitle: '0 মিনিটের মধ্যে মিলেছে' },
     ],
     controls: [
       'জেলা অ্যাডমিন তৈরি',
@@ -23,12 +23,12 @@ export const roleDashboardData = {
       'ঝুঁকিপূর্ণ ঘাটতি এলাকা পর্যালোচনা',
     ],
     chartSeries: [
-      { label: 'জানু', value: 620 },
-      { label: 'ফেব', value: 710 },
-      { label: 'মার্চ', value: 780 },
-      { label: 'এপ্রি', value: 860 },
-      { label: 'মে', value: 910 },
-      { label: 'জুন', value: 970 },
+      { label: 'জানু', value: 0 },
+      { label: 'ফেব', value: 0 },
+      { label: 'মার্চ', value: 0 },
+      { label: 'এপ্রি', value: 0 },
+      { label: 'মে', value: 0 },
+      { label: 'জুন', value: 90 },
     ],
     accessSummary: [
       'সব রক্তদাতার প্রোফাইল দেখা ও সম্পাদনা করা যায়',
@@ -40,9 +40,9 @@ export const roleDashboardData = {
     label: 'জেলা অ্যাডমিন',
     scope: 'নিজ জেলার তথ্য ও কার্যক্রম ব্যবস্থাপনা',
     summaries: [
-      { title: 'জেলার রক্তদাতা', value: '3,950', subtitle: 'নিজ জেলার তালিকা' },
-      { title: 'সক্রিয় রক্তদাতা', value: '2,130', subtitle: 'জেলায় 53.9% সক্রিয়' },
-      { title: 'অপেক্ষমাণ অনুরোধ', value: '24', subtitle: 'রক্তদাতা মিলানো বাকি' },
+      { title: 'জেলার রক্তদাতা', value: '0', subtitle: 'নিজ জেলার তালিকা' },
+      { title: 'সক্রিয় রক্তদাতা', value: '0', subtitle: 'জেলায় 0% সক্রিয়' },
+      { title: 'অপেক্ষমাণ অনুরোধ', value: '0', subtitle: 'রক্তদাতা মিলানো বাকি' },
     ],
     controls: [
       'উপজেলা অ্যাডমিন তৈরি',
@@ -51,12 +51,12 @@ export const roleDashboardData = {
       'জেলা মাসিক রিপোর্ট এক্সপোর্ট',
     ],
     chartSeries: [
-      { label: 'জানু', value: 140 },
-      { label: 'ফেব', value: 165 },
-      { label: 'মার্চ', value: 178 },
-      { label: 'এপ্রি', value: 190 },
-      { label: 'মে', value: 204 },
-      { label: 'জুন', value: 225 },
+      { label: 'জানু', value: 0 },
+      { label: 'ফেব', value: 0 },
+      { label: 'মার্চ', value: 0 },
+      { label: 'এপ্রি', value: 0 },
+      { label: 'মে', value: 0 },
+      { label: 'জুন', value: 0 },
     ],
     accessSummary: [
       'শুধু নিজ জেলার রক্তদাতার তথ্য দেখা যায়',
@@ -68,9 +68,9 @@ export const roleDashboardData = {
     label: 'উপজেলা অ্যাডমিন',
     scope: 'নিজ উপজেলার তথ্য ও কার্যক্রম ব্যবস্থাপনা',
     summaries: [
-      { title: 'উপজেলার রক্তদাতা', value: '1,260', subtitle: 'বর্তমান উপজেলা তালিকা' },
-      { title: 'এখন প্রস্তুত', value: '690', subtitle: 'এই সপ্তাহে সাড়া দিতে পারবেন' },
-      { title: 'নিষ্ক্রিয় রক্তদাতা', value: '160', subtitle: 'ফলোআপ প্রয়োজন' },
+      { title: 'উপজেলার রক্তদাতা', value: '0', subtitle: 'বর্তমান উপজেলা তালিকা' },
+      { title: 'এখন প্রস্তুত', value: '0', subtitle: 'এই সপ্তাহে সাড়া দিতে পারবেন' },
+      { title: 'নিষ্ক্রিয় রক্তদাতা', value: '0', subtitle: 'ফলোআপ প্রয়োজন' },
     ],
     controls: [
       'ইউনিয়ন দায়িত্বশীল তৈরি',
@@ -79,12 +79,12 @@ export const roleDashboardData = {
       'উপজেলা রক্তদাতা তালিকা এক্সপোর্ট',
     ],
     chartSeries: [
-      { label: 'জানু', value: 44 },
-      { label: 'ফেব', value: 52 },
-      { label: 'মার্চ', value: 63 },
-      { label: 'এপ্রি', value: 71 },
-      { label: 'মে', value: 75 },
-      { label: 'জুন', value: 80 },
+      { label: 'জানু', value: 0 },
+      { label: 'ফেব', value: 0 },
+      { label: 'মার্চ', value: 0 },
+      { label: 'এপ্রি', value: 0 },
+      { label: 'মে', value: 0 },
+      { label: 'জুন', value: 0 },
     ],
     accessSummary: [
       'শুধু নিজ উপজেলার রক্তদাতা দেখা যায়',
@@ -96,9 +96,9 @@ export const roleDashboardData = {
     label: 'ইউনিয়ন দায়িত্বশীল',
     scope: 'নিজ ইউনিয়নের রক্তদাতা ও অনুরোধ ব্যবস্থাপনা',
     summaries: [
-      { title: 'ইউনিয়ন রক্তদাতা', value: '420', subtitle: 'যাচাইকৃত প্রোফাইল' },
-      { title: 'প্রস্তুত রক্তদাতা', value: '238', subtitle: 'তাৎক্ষণিক সাড়া দিতে পারবেন' },
-      { title: 'ফলোআপ', value: '39', subtitle: 'নিষ্ক্রিয় রক্তদাতা যোগাযোগ' },
+      { title: 'ইউনিয়ন রক্তদাতা', value: '0', subtitle: 'যাচাইকৃত প্রোফাইল' },
+      { title: 'প্রস্তুত রক্তদাতা', value: '0', subtitle: 'তাৎক্ষণিক সাড়া দিতে পারবেন' },
+      { title: 'ফলোআপ', value: '0', subtitle: 'নিষ্ক্রিয় রক্তদাতা যোগাযোগ' },
     ],
     controls: [
       'নতুন রক্তদাতা নিবন্ধন',
@@ -117,9 +117,9 @@ export const roleDashboardData = {
     label: 'ওয়ার্ড অ্যাডমিন',
     scope: 'নিজ ইউনিয়ন বা পৌর ওয়ার্ডের কার্যক্রম',
     summaries: [
-      { title: 'ওয়ার্ড রক্তদাতা', value: '420', subtitle: 'যাচাইকৃত প্রোফাইল' },
-      { title: 'প্রস্তুত রক্তদাতা', value: '238', subtitle: 'তাৎক্ষণিক সাড়া দিতে পারবেন' },
-      { title: 'ফলোআপ', value: '39', subtitle: 'নিষ্ক্রিয় রক্তদাতা যোগাযোগ' },
+      { title: 'ওয়ার্ড রক্তদাতা', value: '0', subtitle: 'যাচাইকৃত প্রোফাইল' },
+      { title: 'প্রস্তুত রক্তদাতা', value: '0', subtitle: 'তাৎক্ষণিক সাড়া দিতে পারবেন' },
+      { title: 'ফলোআপ', value: '0', subtitle: 'নিষ্ক্রিয় রক্তদাতা যোগাযোগ' },
     ],
     controls: [
       'নতুন রক্তদাতা নিবন্ধন',
@@ -138,8 +138,8 @@ export const roleDashboardData = {
     label: 'রক্তদাতা',
     scope: 'নিজ প্রোফাইল ও রক্তদানের তথ্য',
     summaries: [
-      { title: 'আপনার রক্তদান', value: '11', subtitle: 'মোট রক্তদানের সংখ্যা' },
-      { title: 'শেষ রক্তদান', value: '12 Mar 2026', subtitle: 'পরবর্তী যোগ্যতার তারিখ আসছে' },
+      { title: 'আপনার রক্তদান', value: '0', subtitle: 'মোট রক্তদানের সংখ্যা' },
+      { title: 'শেষ রক্তদান', value: '', subtitle: 'পরবর্তী যোগ্যতার তারিখ আসছে' },
       { title: 'প্রোফাইল অবস্থা', value: 'প্রস্তুত', subtitle: 'অ্যাডমিনদের কাছে দৃশ্যমান' },
     ],
     controls: [
@@ -149,12 +149,12 @@ export const roleDashboardData = {
       'ব্যক্তিগত সার্টিফিকেট ডাউনলোড',
     ],
     chartSeries: [
-      { label: 'জানু', value: 1 },
+      { label: 'জানু', value: 0 },
       { label: 'ফেব', value: 0 },
-      { label: 'মার্চ', value: 1 },
-      { label: 'এপ্রি', value: 1 },
+      { label: 'মার্চ', value: 0 },
+      { label: 'এপ্রি', value: 0 },
       { label: 'মে', value: 0 },
-      { label: 'জুন', value: 1 },
+      { label: 'জুন', value: 0 },
     ],
     accessSummary: [
       'শুধু নিজের প্রোফাইল ও ইতিহাস দেখা যায়',
