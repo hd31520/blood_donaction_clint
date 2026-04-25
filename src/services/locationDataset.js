@@ -5,12 +5,27 @@ const datasetCache = {
   data: null,
 };
 
+const SPECIAL_POUROSHAVAS = [
+  {
+    id: 'POURO-FARIDPUR-SADAR-1',
+    name: 'Faridpur Pouroshava',
+    bnName: 'ফরিদপুর পৌরসভা',
+    code: 'POURO-FARIDPUR-SADAR',
+    areaType: 'pouroshava',
+    divisionName: 'Dhaka',
+    districtName: 'Faridpur',
+    upazilaName: 'Faridpur Sadar',
+    wards: Array.from({ length: 27 }, (_, index) => String(index + 1)),
+  },
+];
+
 const toLocationItem = (item, extra = {}) => ({
   id: String(item.id),
   name: item.name,
   bnName: item.bnName || '',
   code: item.code || '',
   externalId: item.externalId || item.id,
+  wards: item.wards || extra.wards || [],
   ...extra,
 });
 
@@ -147,6 +162,30 @@ const mapAreasByType = (upazilaNode, areaType) => {
     );
 };
 
+const getSpecialPouroshavasForResolvedUpazila = (resolved) => {
+  if (!resolved?.upazilaNode) {
+    return [];
+  }
+
+  const divisionName = normalizeName(resolved.divisionNode?.name);
+  const districtName = normalizeName(resolved.districtNode?.name);
+  const upazilaName = normalizeName(resolved.upazilaNode?.name);
+
+  return SPECIAL_POUROSHAVAS.filter((item) =>
+    normalizeName(item.divisionName) === divisionName &&
+    normalizeName(item.districtName) === districtName &&
+    normalizeName(item.upazilaName) === upazilaName,
+  ).map((item) =>
+    toLocationItem(item, {
+      divisionId: String(resolved.divisionNode.id),
+      districtId: String(resolved.districtNode.id),
+      upazilaId: String(resolved.upazilaNode.id),
+      areaType: 'pouroshava',
+      wards: item.wards,
+    }),
+  );
+};
+
 export const getPublicDivisions = async () => {
   const dataset = await loadPublicLocationDataset();
   return (dataset?.hierarchical || []).map((division) => toLocationItem(division));
@@ -193,11 +232,17 @@ export const getPublicUnionsByUpazilaId = async (criteriaOrUpazilaId) => {
 export const getPublicPouroshavasByUpazilaId = async (upazilaId) => {
   const dataset = await loadPublicLocationDataset();
   const resolved = resolveUpazilaByCriteria(dataset, { upazilaId });
-  return mapAreasByType(resolved?.upazilaNode, 'pouroshava');
+  return [
+    ...mapAreasByType(resolved?.upazilaNode, 'pouroshava'),
+    ...getSpecialPouroshavasForResolvedUpazila(resolved),
+  ];
 };
 
 export const getPublicPouroshavasByCriteria = async (criteria = {}) => {
   const dataset = await loadPublicLocationDataset();
   const resolved = resolveUpazilaByCriteria(dataset, criteria);
-  return mapAreasByType(resolved?.upazilaNode, 'pouroshava');
+  return [
+    ...mapAreasByType(resolved?.upazilaNode, 'pouroshava'),
+    ...getSpecialPouroshavasForResolvedUpazila(resolved),
+  ];
 };
