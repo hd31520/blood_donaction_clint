@@ -1,0 +1,532 @@
+/* Professional app-wide cleanup: less clutter, consistent spacing, clean product UI */
+:root {
+  --app-shell-max: 1240px;
+  --app-gap: clamp(0.75rem, 1.4vw, 1rem);
+  --app-pad: clamp(0.85rem, 1.6vw, 1.15rem);
+  --app-radius: 18px;
+  --app-radius-lg: 24px;
+  --app-shadow: 0 18px 48px rgba(20, 39, 39, 0.1);
+  --app-shadow-soft: 0 10px 26px rgba(20, 39, 39, 0.08);
+}
+
+html,
+body,
+#root {
+  min-width: 0;
+}
+
+body {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+body::after {
+  opacity: 0.45;
+}
+
+.global-watermark {
+  display: none !important;
+}
+
+.app-frame {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.app-content {
+  width: 100%;
+  max-width: var(--app-shell-max);
+  margin-inline: auto;
+  padding: clamp(0.85rem, 2vw, 1.35rem) !important;
+}
+
+.feature-page,
+.home-page-stack,
+.patient-page,
+.donor-page,
+.dashboard-page,
+.profile-page,
+.analytics-page,
+.settings-page,
+.home-layout-content,
+.panel-grid,
+.dashboard-grid,
+.kpi-grid,
+.analytics-grid {
+  display: grid;
+  gap: var(--app-gap) !important;
+}
+
+.sidebar {
+  padding: 1rem 0.8rem !important;
+}
+
+.brand-block {
+  padding: 0.75rem !important;
+}
+
+.brand-block h1,
+.home-layout-brand h1 {
+  font-size: 1.12rem !important;
+}
+
+.brand-block p,
+.home-layout-brand p,
+.home-layout-sidebar-note,
+.wm-text-block,
+.auth-subtitle,
+.hero-content p,
+.home-layout-header p,
+.home-hero-main p,
+.home-hero-side li,
+.home-info-card p,
+.home-highlight-card p,
+.home-cta-section p,
+.home-footer p,
+.startup-hero-text,
+.muted-text {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.brand-block p,
+.home-layout-brand p,
+.home-layout-sidebar-note p,
+.home-layout-sidebar-note strong,
+.home-hero-side ul,
+.home-info-card p,
+.home-highlight-card p,
+.home-footer p,
+.startup-hero-text {
+  display: none !important;
+}
+
+.sidebar-nav {
+  margin-top: 0.8rem !important;
+  gap: 0.28rem !important;
+}
+
+.sidebar-nav-item,
+.mobile-nav-item,
+.home-layout-side-link {
+  min-height: 42px;
+  border-radius: 12px !important;
+  padding: 0.55rem 0.68rem !important;
+  font-size: 0.92rem;
+}
+
+.user-chip,
+.notification-center {
+  margin-top: 0.7rem !important;
+}
+
+.user-chip {
+  padding: 0.6rem !important;
+  border-radius: 14px !important;
+}
+
+.user-chip-avatar {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.feature-header,
+.home-layout-header,
+.table-card,
+.panel-card,
+.hero-card,
+.auth-card,
+.home-hero-main,
+.home-hero-side,
+.home-filter-panel,
+.home-donor-grid-wrap,
+.home-priority-section,
+.home-cta-section,
+.home-footer,
+.home-donor-card,
+.home-info-card,
+.home-highlight-card,
+.kpi-card,
+.analytics-card,
+.profile-card,
+.settings-card,
+.patient-create-card,
+.error-boundary-card,
+.request-dialog,
+.donor-dialog,
+.modal-card,
+.card,
+.stat-card {
+  border-radius: var(--app-radius) !important;
+  box-shadow: var(--app-shadow-soft) !important;
+}
+
+.feature-header,
+.home-layout-header,
+.table-card,
+.panel-card,
+.hero-card,
+.auth-card,
+.home-hero-main,
+.home-hero-side,
+.home-filter-panel,
+.home-donor-grid-wrap,
+.home-priority-section,
+.home-cta-section,
+.home-footer,
+.kpi-card,
+.analytics-card,
+.profile-card,
+.settings-card,
+.patient-create-card {
+  padding: var(--app-pad) !important;
+}
+
+.feature-header {
+  min-height: 0;
+  align-items: center;
+}
+
+.feature-header h1,
+.feature-header h2,
+.feature-header h3,
+.home-layout-header h2,
+.hero-content h2,
+.auth-card h2 {
+  margin: 0.1rem 0 0 !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  margin: 0 !important;
+  font-size: 0.72rem !important;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--brand-strong);
+}
+
+.inline-link-btn,
+button,
+.logout-btn,
+.ghost-btn,
+.ghost-action {
+  min-height: 42px !important;
+  border-radius: 999px !important;
+  padding: 0.55rem 0.85rem !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem;
+}
+
+input,
+select,
+textarea {
+  min-height: 42px !important;
+  border-radius: 12px !important;
+  padding: 0.58rem 0.72rem !important;
+  font-size: 0.92rem !important;
+}
+
+label {
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+}
+
+.toolbar,
+.patient-toolbar,
+.home-filter-toolbar,
+.profile-form-grid,
+.auth-form,
+.stack-form,
+.request-dialog-grid {
+  gap: 0.6rem !important;
+}
+
+.patient-filter-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 2fr) minmax(130px, 1fr) minmax(130px, 1fr) auto !important;
+  gap: 0.65rem !important;
+  align-items: end !important;
+  padding: 0.85rem !important;
+  border: 1px solid var(--glass-border, var(--line));
+  border-radius: var(--app-radius) !important;
+  background: var(--glass-bg, var(--bg-card));
+  box-shadow: var(--app-shadow-soft);
+}
+
+.public-banner {
+  padding: 0.65rem 0.8rem !important;
+  border-radius: 14px !important;
+  font-size: 0.92rem;
+}
+
+.table-card {
+  overflow: hidden !important;
+}
+
+.table-card table {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.table-card th,
+.table-card td {
+  padding: 0.62rem 0.7rem !important;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.table-card th {
+  font-size: 0.74rem !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.table-card tbody tr:hover {
+  background: rgba(193, 50, 50, 0.045) !important;
+}
+
+.patient-row-actions,
+.dashboard-card-actions,
+.hero-actions,
+.home-hero-actions,
+.error-boundary-actions,
+.request-dialog-actions,
+.donor-dialog-actions {
+  gap: 0.45rem !important;
+}
+
+.patient-row-actions .inline-link-btn,
+.patient-row-actions button {
+  min-height: 34px !important;
+  padding: 0.34rem 0.55rem !important;
+  font-size: 0.78rem !important;
+}
+
+.status-chip,
+.growth-pill,
+.notification-badge {
+  border-radius: 999px !important;
+  font-size: 0.74rem !important;
+  min-height: 24px;
+  padding: 0.2rem 0.5rem !important;
+}
+
+.home-layout-shell,
+.home-hero-surface,
+.hero-grid,
+.home-hero {
+  gap: var(--app-gap) !important;
+}
+
+.home-layout-sidebar,
+.home-layout-header,
+.home-hero-main,
+.home-hero-side,
+.home-filter-panel,
+.home-donor-grid-wrap,
+.home-priority-section,
+.home-cta-section,
+.home-footer {
+  box-shadow: var(--app-shadow-soft) !important;
+}
+
+.home-donor-grid,
+.home-priority-grid,
+.home-info-grid {
+  gap: 0.65rem !important;
+}
+
+.home-footer {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpi-grid,
+.analytics-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kpi-card,
+.analytics-card,
+.home-donor-card,
+.home-info-card,
+.home-highlight-card {
+  padding: 0.8rem !important;
+}
+
+.request-dialog-backdrop,
+.donor-dialog-backdrop,
+.modal-backdrop {
+  padding: 0.8rem !important;
+}
+
+.request-dialog,
+.donor-dialog,
+.modal-card {
+  border-radius: var(--app-radius-lg) !important;
+}
+
+.request-dialog-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.request-dialog .location-selector {
+  padding: 0.75rem !important;
+}
+
+.request-dialog-actions {
+  padding-top: 0.7rem !important;
+}
+
+.auth-page {
+  padding: 1rem !important;
+}
+
+.auth-card {
+  padding: 1rem !important;
+}
+
+.auth-subtitle {
+  margin: 0.5rem 0 0.8rem !important;
+}
+
+.page-loader {
+  min-height: 120px !important;
+  border-radius: var(--app-radius) !important;
+}
+
+.notification-panel {
+  border-radius: 18px !important;
+  box-shadow: var(--app-shadow) !important;
+}
+
+.notification-body {
+  gap: 0.4rem !important;
+}
+
+.notification-item {
+  padding: 0.55rem !important;
+  border-radius: 14px !important;
+}
+
+@media (max-width: 1100px) {
+  .app-frame {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+
+  .kpi-grid,
+  .analytics-grid,
+  .home-priority-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .app-frame {
+    display: block !important;
+  }
+
+  .app-content {
+    max-width: 100%;
+    padding: 0.8rem !important;
+  }
+
+  .feature-header,
+  .panel-card-header,
+  .home-cta-section,
+  .profile-avatar-row {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .patient-filter-toolbar,
+  .toolbar,
+  .patient-toolbar,
+  .home-filter-toolbar,
+  .profile-form-grid,
+  .request-dialog-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-footer,
+  .home-donor-grid,
+  .home-priority-grid,
+  .home-info-grid,
+  .kpi-grid,
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 680px) {
+  body {
+    font-size: 14px;
+  }
+
+  .app-content {
+    padding: 0.65rem !important;
+  }
+
+  .feature-page,
+  .home-page-stack,
+  .patient-page,
+  .donor-page,
+  .dashboard-page,
+  .profile-page,
+  .analytics-page,
+  .settings-page {
+    gap: 0.65rem !important;
+  }
+
+  .feature-header,
+  .home-layout-header,
+  .table-card,
+  .panel-card,
+  .hero-card,
+  .auth-card,
+  .home-hero-main,
+  .home-hero-side,
+  .home-filter-panel,
+  .home-donor-grid-wrap,
+  .home-priority-section,
+  .home-cta-section,
+  .home-footer,
+  .kpi-card,
+  .analytics-card,
+  .profile-card,
+  .settings-card,
+  .patient-create-card {
+    padding: 0.75rem !important;
+    border-radius: 16px !important;
+  }
+
+  .feature-header .inline-link-btn,
+  .feature-header button,
+  .home-cta-section .inline-link-btn,
+  .patient-row-actions .inline-link-btn,
+  .patient-row-actions button,
+  .request-dialog-actions .inline-link-btn,
+  .request-dialog-actions button {
+    width: 100% !important;
+  }
+
+  .request-dialog-backdrop {
+    align-items: end !important;
+    padding: 0 !important;
+  }
+
+  .request-dialog {
+    width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  .request-dialog-actions {
+    flex-direction: column-reverse !important;
+  }
+
+  .public-banner {
+    font-size: 0.84rem !important;
+  }
+}
