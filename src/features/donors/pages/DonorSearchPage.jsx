@@ -54,6 +54,7 @@ export const DonorSearchPage = () => {
     unionId: '',
   });
   const [locationResetKey, setLocationResetKey] = useState(0);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const searchFilters = useMemo(
     () => ({
@@ -111,63 +112,100 @@ export const DonorSearchPage = () => {
     setLocationResetKey((previous) => previous + 1);
   };
 
+  const closeFilterDialog = () => {
+    setIsFilterOpen(false);
+  };
+
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">অ্যাডমিন তালিকা</p>
-        <h2>রক্তদাতা তালিকা</h2>
-        <p className="muted-text">৯০ দিনের নিয়ম অনুযায়ী কে এখন রক্ত দিতে পারবেন তা এখানে দেখা যাবে।</p>
+        <div>
+          <p className="eyebrow">অ্যাডমিন তালিকা</p>
+          <h2>রক্তদাতা তালিকা</h2>
+        </div>
+        <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsFilterOpen(true)}>
+          Filter
+        </button>
       </header>
 
-      <div className="toolbar">
-        <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
-        <select
-          id="bloodGroup"
-          value={bloodGroup}
-          onChange={(event) => setBloodGroup(event.target.value)}
-        >
-          <option value="">সব</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-        </select>
+      {isFilterOpen ? (
+        <div className="filter-dialog-backdrop" role="presentation" onMouseDown={closeFilterDialog}>
+          <section
+            className="filter-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="donorFilterDialogTitle"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="filter-dialog-header">
+              <div>
+                <p className="eyebrow">Filter</p>
+                <h3 id="donorFilterDialogTitle">রক্তদাতা খুঁজুন</h3>
+              </div>
+              <button type="button" className="filter-dialog-close" aria-label="Close filter dialog" onClick={closeFilterDialog}>
+                ×
+              </button>
+            </div>
 
-        <label htmlFor="availabilityStatus">প্রাপ্যতা</label>
-        <select
-          id="availabilityStatus"
-          value={availabilityStatus}
-          onChange={(event) => setAvailabilityStatus(event.target.value)}
-        >
-          <option value="">সব</option>
-          <option value="available">প্রস্তুত</option>
-          <option value="unavailable">অনুপলব্ধ</option>
-          <option value="temporarily_unavailable">সাময়িক অনুপলব্ধ</option>
-        </select>
+            <div className="filter-dialog-form">
+              <div className="filter-dialog-grid">
+                <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
+                <select
+                  id="bloodGroup"
+                  value={bloodGroup}
+                  onChange={(event) => setBloodGroup(event.target.value)}
+                >
+                  <option value="">সব</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
 
-        <button type="button" className="inline-link-btn" onClick={clearFilters}>
-          ফিল্টার মুছুন
-        </button>
-      </div>
+                <label htmlFor="availabilityStatus">প্রাপ্যতা</label>
+                <select
+                  id="availabilityStatus"
+                  value={availabilityStatus}
+                  onChange={(event) => setAvailabilityStatus(event.target.value)}
+                >
+                  <option value="">সব</option>
+                  <option value="available">প্রস্তুত</option>
+                  <option value="unavailable">অনুপলব্ধ</option>
+                  <option value="temporarily_unavailable">সাময়িক অনুপলব্ধ</option>
+                </select>
+              </div>
 
-      <LocationSelector
-        mode="filter"
-        idPrefix="donorSearch"
-        resetKey={locationResetKey}
-        enableAutoDetect={false}
-        onChange={(value) => {
-          setLocationFilters({
-            divisionId: value.divisionId,
-            districtId: value.districtId,
-            upazilaId: value.upazilaId,
-            unionId: value.unionId,
-          });
-        }}
-      />
+              <LocationSelector
+                mode="filter"
+                idPrefix="donorSearch"
+                resetKey={locationResetKey}
+                enableAutoDetect={false}
+                onChange={(value) => {
+                  setLocationFilters({
+                    divisionId: value.divisionId,
+                    districtId: value.districtId,
+                    upazilaId: value.upazilaId,
+                    unionId: value.unionId,
+                  });
+                }}
+              />
+
+              <div className="filter-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={clearFilters}>
+                  ফিল্টার মুছুন
+                </button>
+                <button type="button" className="inline-link-btn" onClick={closeFilterDialog}>
+                  Apply Filter
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {error ? <p className="auth-error">{error}</p> : null}
       {isLoading ? <p className="page-loader">রক্তদাতা লোড হচ্ছে...</p> : null}
