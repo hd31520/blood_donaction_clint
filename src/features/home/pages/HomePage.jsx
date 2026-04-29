@@ -164,7 +164,7 @@ export const HomePage = () => {
             রক্তের অনুরোধ দিন
           </Link>
           <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsDonorDialogOpen(true)}>
-            Add Donor
+            ডোনার যোগ করুন
           </button>
           <Link to={isAuthenticated ? '/dashboard' : '/login'} className="inline-link-btn ghost-action">
             {isAuthenticated ? 'ড্যাশবোর্ড' : 'লগইন'}
@@ -320,15 +320,15 @@ export const HomePage = () => {
             <button type="button" className="donor-dialog-close" aria-label="Close donor dialog" onClick={() => setIsDonorDialogOpen(false)}>
               ×
             </button>
-            <p className="eyebrow">Add Donor</p>
-            <h2 id="addDonorDialogTitle">রক্তদাতা হিসেবে যুক্ত হন</h2>
-            <p className="muted-text">Account তৈরি করে donor profile complete করুন।</p>
+            <p className="eyebrow">Donor</p>
+            <h2 id="addDonorDialogTitle">ডোনার হিসেবে যুক্ত হন</h2>
+            <p className="muted-text">ডোনার profile তৈরি বা update করুন।</p>
             <div className="donor-dialog-actions">
               <Link to="/register" className="inline-link-btn startup-primary-cta">
-                Register
+                ডোনার রেজিস্টার
               </Link>
               <Link to={isAuthenticated ? '/profile' : '/login'} className="inline-link-btn ghost-action">
-                {isAuthenticated ? 'Profile' : 'Login'}
+                {isAuthenticated ? 'প্রোফাইল আপডেট' : 'লগইন'}
               </Link>
             </div>
           </section>
