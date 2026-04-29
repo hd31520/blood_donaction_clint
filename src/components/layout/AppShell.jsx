@@ -93,13 +93,15 @@ export const AppShell = () => {
           <p>রক্ত সহায়তার দায়িত্বশীল প্ল্যাটফর্ম</p>
         </div>
 
-        <div className="user-chip">
-          {user?.profileImageUrl ? (
-            <img className="user-chip-avatar" src={user.profileImageUrl} alt={user?.name || 'User'} />
-          ) : null}
-          <strong>{user?.name || 'অতিথি ব্যবহারকারী'}</strong>
-          <span>{user?.roleLabel || user?.role || 'পাবলিক ভিজিটর'}</span>
-        </div>
+        {isAuthenticated ? (
+          <div className="user-chip">
+            {user?.profileImageUrl ? (
+              <img className="user-chip-avatar" src={user.profileImageUrl} alt={user?.name || 'User'} />
+            ) : null}
+            <strong>{user?.name || 'ব্যবহারকারী'}</strong>
+            <span>{user?.roleLabel || user?.role || ''}</span>
+          </div>
+        ) : null}
 
         {isAuthenticated ? <NotificationCenter /> : null}
 
@@ -130,7 +132,7 @@ export const AppShell = () => {
       </aside>
 
       <div className="app-content-wrap">
-        <header className="mobile-header">
+        <header className="mobile-header compact-mobile-header">
           <button
             type="button"
             className="mobile-menu-toggle"
@@ -143,14 +145,11 @@ export const AppShell = () => {
             <span>{isSidebarOpen ? 'বন্ধ' : 'মেনু'}</span>
           </button>
 
-          <div>
-            <p className="eyebrow">বাংলাদেশ ব্লাড নেটওয়ার্ক</p>
-            <h2>বাংলা ব্লাড</h2>
-          </div>
-          <Link to="/home" className="inline-link-btn">
+          <strong className="mobile-header-brand">বাংলা ব্লাড</strong>
+
+          <Link to="/home" className="inline-link-btn mobile-home-link">
             হোম
           </Link>
-          {isAuthenticated ? <NotificationCenter /> : null}
         </header>
 
         <main className="app-content">
