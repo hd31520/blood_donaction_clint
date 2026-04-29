@@ -144,48 +144,23 @@ export const DashboardPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">Role ড্যাশবোর্ড</p>
-        <h2>{roleData.label} কন্ট্রোল সেন্টার</h2>
-        <p className="role-scope">{roleData.scope}</p>
-        {isLoading ? <p className="muted-text">লাইভ ড্যাশবোর্ড তথ্য রিফ্রেশ হচ্ছে...</p> : null}
+        <div>
+          <p className="eyebrow">Role ড্যাশবোর্ড</p>
+          <h2>{roleData.label} কন্ট্রোল সেন্টার</h2>
+        </div>
         <Link to="/home" className="inline-link-btn">
           হোম
         </Link>
       </header>
+
+      {isLoading ? <p className="page-loader">লাইভ ড্যাশবোর্ড তথ্য রিফ্রেশ হচ্ছে...</p> : null}
 
       <RoleSummaryPanel summaries={resolvedSummaries} />
 
       <div className="panel-grid dashboard-grid">
         <article className="panel-card">
           <h3>কার্যক্রম চার্ট</h3>
-          <p className="muted-text">আপনার অনুমোদিত এলাকার মাসিক রক্তদান</p>
           <MiniBarChart data={chartSeries} />
-        </article>
-
-        <article className="panel-card">
-          <h3>Role কন্ট্রোল</h3>
-          <ul className="list-clean">
-            {roleData.controls.map((control) => (
-              <li key={control}>{control}</li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="panel-card access-panel">
-          <h3>অ্যাক্সেস সীমা</h3>
-          <ul className="list-clean">
-            {roleData.accessSummary.map((entry) => (
-              <li key={entry}>{entry}</li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="panel-card">
-          <h3>সংক্ষিপ্ত সারাংশ</h3>
-          <p className="muted-text">
-            আপনার role ও এলাকার ভিত্তিতে এই ড্যাশবোর্ডের কন্ট্রোল ও পরিসংখ্যান বদলায়।
-          </p>
-          <button type="button">পূর্ণ অ্যানালিটিক্স খুলুন</button>
         </article>
       </div>
     </section>
