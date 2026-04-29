@@ -29,7 +29,7 @@ body::after {
 }
 
 .app-frame {
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 250px minmax(0, 1fr) !important;
 }
 
 .app-content {
@@ -57,16 +57,17 @@ body::after {
 }
 
 .sidebar {
-  padding: 1rem 0.8rem !important;
+  padding: 0.55rem !important;
 }
 
 .brand-block {
-  padding: 0.75rem !important;
+  padding: 0.5rem !important;
+  border-radius: 14px !important;
 }
 
 .brand-block h1,
 .home-layout-brand h1 {
-  font-size: 1.12rem !important;
+  font-size: 1rem !important;
 }
 
 .brand-block p,
@@ -101,32 +102,32 @@ body::after {
 }
 
 .sidebar-nav {
-  margin-top: 0.8rem !important;
-  gap: 0.28rem !important;
+  margin-top: 0.45rem !important;
+  gap: 0.18rem !important;
 }
 
 .sidebar-nav-item,
 .mobile-nav-item,
 .home-layout-side-link {
-  min-height: 42px;
-  border-radius: 12px !important;
-  padding: 0.55rem 0.68rem !important;
-  font-size: 0.92rem;
+  min-height: 38px !important;
+  border-radius: 10px !important;
+  padding: 0.42rem 0.55rem !important;
+  font-size: 0.88rem !important;
 }
 
 .user-chip,
 .notification-center {
-  margin-top: 0.7rem !important;
+  margin-top: 0.45rem !important;
 }
 
 .user-chip {
-  padding: 0.6rem !important;
-  border-radius: 14px !important;
+  padding: 0.45rem !important;
+  border-radius: 12px !important;
 }
 
 .user-chip-avatar {
-  width: 38px !important;
-  height: 38px !important;
+  width: 34px !important;
+  height: 34px !important;
 }
 
 .feature-header,
@@ -541,7 +542,7 @@ html.dark .app-dialog-close {
 
 @media (max-width: 1100px) {
   .app-frame {
-    grid-template-columns: 250px minmax(0, 1fr);
+    grid-template-columns: 232px minmax(0, 1fr) !important;
   }
 
   .kpi-grid,
