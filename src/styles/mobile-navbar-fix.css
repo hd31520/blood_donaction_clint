@@ -1,14 +1,23 @@
 /* Mobile navbar/drawer compact spacing fix */
 @media (max-width: 980px) {
+  .app-frame,
+  .app-content-wrap {
+    min-height: 100dvh !important;
+  }
+
+  .app-content-wrap {
+    display: block !important;
+  }
+
   .sidebar {
     box-sizing: border-box !important;
-    padding: 2.45rem 0.4rem 0 !important;
+    padding: 2.15rem 0.4rem 0 !important;
     height: 100dvh !important;
     min-height: 100dvh !important;
     max-height: 100dvh !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 0.28rem !important;
+    gap: 0.22rem !important;
     overflow-y: auto !important;
   }
 
@@ -16,9 +25,17 @@
     margin-bottom: 0 !important;
   }
 
+  .sidebar-close-btn {
+    top: 0.45rem !important;
+    right: 0.45rem !important;
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 0 0.55rem !important;
+  }
+
   .sidebar-nav {
-    margin: 0.25rem 0 0 !important;
-    gap: 0.08rem !important;
+    margin: 0.2rem 0 0 !important;
+    gap: 0.06rem !important;
     padding: 0 !important;
     flex: 0 0 auto !important;
   }
@@ -26,11 +43,11 @@
   .sidebar-nav-item,
   .mobile-nav-item,
   .home-layout-side-link {
-    min-height: 34px !important;
+    min-height: 32px !important;
     height: auto !important;
-    padding: 0.32rem 0.48rem !important;
+    padding: 0.28rem 0.46rem !important;
     border-radius: 9px !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
   }
 
   .brand-block,
@@ -42,28 +59,63 @@
   }
 
   .brand-block {
-    padding: 0.38rem !important;
+    padding: 0.32rem !important;
+  }
+
+  .brand-block h1 {
+    margin: 0 !important;
+    line-height: 1.1 !important;
   }
 
   .user-chip {
-    padding: 0.36rem !important;
+    padding: 0.32rem !important;
   }
 
   .logout-btn {
-    min-height: 34px !important;
-    padding: 0.32rem 0.48rem !important;
-    margin-top: 0.15rem !important;
+    min-height: 32px !important;
+    padding: 0.28rem 0.46rem !important;
+    margin-top: 0.12rem !important;
   }
 
-  .mobile-header {
-    padding: 0.38rem 0.6rem !important;
-    min-height: 48px !important;
+  .mobile-header,
+  .compact-mobile-header {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    padding: 0.35rem 0.6rem !important;
+    min-height: 46px !important;
+    height: auto !important;
+  }
+
+  .mobile-header .eyebrow,
+  .mobile-header h2 {
+    display: none !important;
+  }
+
+  .mobile-header-brand {
+    display: block !important;
+    margin: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1.1 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .mobile-menu-toggle,
+  .mobile-home-link {
+    min-height: 36px !important;
+    padding: 0.35rem 0.62rem !important;
+  }
+
+  .app-content {
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
   }
 
   .home-layout-mobile-nav {
-    gap: 0.25rem !important;
-    padding: 0.18rem 0 0 !important;
-    margin: 0 0 0.2rem !important;
+    gap: 0.22rem !important;
+    padding: 0.14rem 0 0 !important;
+    margin: 0 !important;
   }
 
   .sidebar-overlay {
@@ -74,28 +126,40 @@
 @media (max-width: 680px) {
   .sidebar {
     padding-bottom: 0 !important;
-    gap: 0.2rem !important;
+    gap: 0.16rem !important;
   }
 
   .sidebar-nav {
-    gap: 0.05rem !important;
+    gap: 0.04rem !important;
   }
 
   .sidebar-nav-item,
   .mobile-nav-item,
   .home-layout-side-link {
-    min-height: 32px !important;
-    padding-block: 0.28rem !important;
+    min-height: 31px !important;
+    padding-block: 0.24rem !important;
   }
 
-  .mobile-header {
-    padding-top: 0.36rem !important;
-    padding-bottom: 0.32rem !important;
+  .mobile-header,
+  .compact-mobile-header {
+    padding-top: 0.28rem !important;
+    padding-bottom: 0.28rem !important;
+    min-height: 42px !important;
+  }
+
+  .mobile-menu-toggle,
+  .mobile-home-link {
+    min-height: 34px !important;
+    padding: 0.3rem 0.58rem !important;
+  }
+
+  .app-content {
+    padding-top: 0.55rem !important;
   }
 
   .home-layout-mobile-nav {
     padding-bottom: 0 !important;
-    margin-bottom: 0.1rem !important;
+    margin-bottom: 0 !important;
   }
 }
 
@@ -110,6 +174,10 @@
   .home-layout-side-link,
   .logout-btn {
     min-height: 30px !important;
-    padding: 0.24rem 0.42rem !important;
+    padding: 0.22rem 0.4rem !important;
+  }
+
+  .mobile-header-brand {
+    font-size: 0.96rem !important;
   }
 }
