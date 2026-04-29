@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { useAuth } from '../../auth/context/AuthContext.jsx';
-import { donorSearchService } from '../../donors/services/donorSearchService.js';
-import { notificationService } from '../../notifications/services/notificationService.js';
-import { reportService } from '../../reports/services/reportService.js';
 
 const EVENT_CREATOR_ROLES = ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin'];
 
@@ -12,10 +9,7 @@ const buildEventId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 
 
 export const CommunityPage = () => {
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [upcomingDrives, setUpcomingDrives] = useState([]);
-  const [volunteerFocus, setVolunteerFocus] = useState([]);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [communityEvents, setCommunityEvents] = useState([
     {
       id: buildEventId(),
@@ -32,105 +26,14 @@ export const CommunityPage = () => {
     details: '',
   });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadDynamicCommunityData = async () => {
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const now = new Date();
-
-        const [notificationsResult, oNegativeDonorsResult, monthlyReportResult] = await Promise.allSettled([
-          notificationService.getMyNotifications({ page: 1, limit: 20 }),
-          donorSearchService.searchAuthenticated({
-            bloodGroup: 'O-',
-            availabilityStatus: 'available',
-            page: 1,
-            limit: 1,
-          }),
-          reportService.getMonthlyDonorReport({
-            year: now.getFullYear(),
-            month: now.getMonth() + 1,
-          }),
-        ]);
-
-        if (!isMounted) {
-          return;
-        }
-
-        const notifications = notificationsResult.status === 'fulfilled'
-          ? notificationsResult.value?.data || []
-          : [];
-
-        const adminUpdates = notifications
-          .filter((item) => String(item.type || '').toLowerCase() === 'admin_update')
-          .slice(0, 3)
-          .map((item) => {
-            const createdAt = item.createdAt
-              ? new Date(item.createdAt).toLocaleDateString(undefined, {
-                  day: '2-digit',
-                  month: 'short',
-                })
-              : 'তারিখ পরে জানানো হবে';
-
-            return `${item.title} - ${createdAt}`;
-          });
-
-        const oNegativeAvailableCount = oNegativeDonorsResult.status === 'fulfilled'
-          ? Number(oNegativeDonorsResult.value?.meta?.total || 0)
-          : 0;
-
-        const inactiveDonorCount = monthlyReportResult.status === 'fulfilled'
-          ? Number(monthlyReportResult.value?.donorActivity?.inactiveDonors || 0)
-          : 0;
-
-        const unreadCoordinationAlerts = notifications.filter((item) => !item.isRead).length;
-
-        setUpcomingDrives(
-          adminUpdates.length
-            ? adminUpdates
-            : ['এখনও কোনো রক্তদান কর্মসূচি প্রকাশ হয়নি। পরে আবার দেখুন।'],
-        );
-
-        setVolunteerFocus([
-          `এই মাসে নিষ্ক্রিয় রক্তদাতাদের সক্রিয় করুন (${inactiveDonorCount.toLocaleString('bn-BD')} বাকি)`,
-          `O- প্রস্তুতি রাখুন (${oNegativeAvailableCount.toLocaleString('bn-BD')} জন প্রস্তুত)`,
-          `সমন্বয় অ্যালার্ট দেখুন (${unreadCoordinationAlerts.toLocaleString('bn-BD')}টি অপঠিত)`,
-        ]);
-      } catch (requestError) {
-        if (isMounted) {
-          setError(requestError?.response?.data?.message || 'কমিউনিটি তথ্য লোড করা যায়নি।');
-          setUpcomingDrives(['এই মুহূর্তে কর্মসূচি লোড করা যাচ্ছে না।']);
-          setVolunteerFocus(['এই মুহূর্তে অগ্রাধিকার তালিকা লোড করা যাচ্ছে না।']);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadDynamicCommunityData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const canCreateEvent = EVENT_CREATOR_ROLES.includes(user?.role);
-
-  const headerStatus = useMemo(() => {
-    if (isLoading) {
-      return 'কমিউনিটি তথ্য রিফ্রেশ হচ্ছে...';
-    }
-
-    return error || '';
-  }, [error, isLoading]);
 
   const handleEventChange = (field) => (event) => {
     setEventForm((previous) => ({ ...previous, [field]: event.target.value }));
+  };
+
+  const closeEventDialog = () => {
+    setIsEventDialogOpen(false);
   };
 
   const submitEvent = (event) => {
@@ -158,88 +61,106 @@ export const CommunityPage = () => {
     ]);
 
     setEventForm({ title: '', date: '', location: '', details: '' });
+    setIsEventDialogOpen(false);
     toast.success('কমিউনিটি ইভেন্ট যোগ হয়েছে।');
   };
 
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">নেটওয়ার্ক</p>
-        <h2>কমিউনিটি সমন্বয়</h2>
-        {headerStatus ? <p className="muted-text">{headerStatus}</p> : null}
+        <div>
+          <p className="eyebrow">কমিউনিটি</p>
+          <h2>কমিউনিটি ইভেন্ট</h2>
+        </div>
+        {canCreateEvent ? (
+          <button type="button" className="inline-link-btn" onClick={() => setIsEventDialogOpen(true)}>
+            ইভেন্ট যোগ করুন
+          </button>
+        ) : null}
       </header>
 
-      <div className="panel-grid">
-        <article className="panel-card">
-          <h3>আসন্ন রক্তদান কর্মসূচি</h3>
-          <ul className="list-clean">
-            {upcomingDrives.map((drive) => (
-              <li key={drive}>{drive}</li>
-            ))}
-          </ul>
-        </article>
+      <article className="panel-card">
+        <ul className="list-clean community-event-list">
+          {communityEvents.map((item) => (
+            <li key={item.id}>
+              <strong>{item.title}</strong>
+              <div className="muted-text">
+                {item.date} · {item.location}
+              </div>
+              {item.details ? <p className="muted-text compact-text">{item.details}</p> : null}
+            </li>
+          ))}
+        </ul>
+      </article>
 
-        <article className="panel-card">
-          <h3>স্বেচ্ছাসেবী অগ্রাধিকার</h3>
-          <ul className="list-clean">
-            {volunteerFocus.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </article>
+      {isEventDialogOpen ? (
+        <div className="app-dialog-backdrop" role="presentation" onMouseDown={closeEventDialog}>
+          <section className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="communityEventDialogTitle" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="app-dialog-header">
+              <div>
+                <p className="eyebrow">কমিউনিটি ইভেন্ট</p>
+                <h3 id="communityEventDialogTitle">ইভেন্ট যোগ করুন</h3>
+              </div>
+              <button type="button" className="app-dialog-close" aria-label="Close event dialog" onClick={closeEventDialog}>
+                ×
+              </button>
+            </div>
 
-        <article className="panel-card">
-          <div className="panel-card-header">
-            <h3>কমিউনিটি ইভেন্ট</h3>
-            {canCreateEvent ? <span className="status-pill status-success">ইভেন্ট তৈরি চালু</span> : null}
-          </div>
-
-          <ul className="list-clean community-event-list">
-            {communityEvents.map((item) => (
-              <li key={item.id}>
-                <strong>{item.title}</strong>
-                <div className="muted-text">
-                  {item.date} · {item.location}
+            <form className="app-dialog-form" onSubmit={submitEvent}>
+              <div className="app-dialog-grid">
+                <div className="home-filter-field app-dialog-full">
+                  <label htmlFor="eventTitle">ইভেন্ট শিরোনাম</label>
+                  <input
+                    id="eventTitle"
+                    type="text"
+                    value={eventForm.title}
+                    onChange={handleEventChange('title')}
+                  />
                 </div>
-                {item.details ? <p className="muted-text compact-text">{item.details}</p> : null}
-              </li>
-            ))}
-          </ul>
 
-          {canCreateEvent ? (
-            <form className="stack-form community-event-form" onSubmit={submitEvent}>
-              <input
-                type="text"
-                placeholder="ইভেন্ট শিরোনাম"
-                value={eventForm.title}
-                onChange={handleEventChange('title')}
-              />
-              <input
-                type="date"
-                value={eventForm.date}
-                onChange={handleEventChange('date')}
-              />
-              <input
-                type="text"
-                placeholder="ইভেন্ট লোকেশন"
-                value={eventForm.location}
-                onChange={handleEventChange('location')}
-              />
-              <textarea
-                rows="3"
-                placeholder="ইভেন্টের বিস্তারিত"
-                value={eventForm.details}
-                onChange={handleEventChange('details')}
-              />
-              <button type="submit" className="primary-button">ইভেন্ট যোগ করুন</button>
+                <div className="home-filter-field">
+                  <label htmlFor="eventDate">তারিখ</label>
+                  <input
+                    id="eventDate"
+                    type="date"
+                    value={eventForm.date}
+                    onChange={handleEventChange('date')}
+                  />
+                </div>
+
+                <div className="home-filter-field">
+                  <label htmlFor="eventLocation">লোকেশন</label>
+                  <input
+                    id="eventLocation"
+                    type="text"
+                    value={eventForm.location}
+                    onChange={handleEventChange('location')}
+                  />
+                </div>
+
+                <div className="home-filter-field app-dialog-full">
+                  <label htmlFor="eventDetails">বিস্তারিত</label>
+                  <textarea
+                    id="eventDetails"
+                    rows="3"
+                    value={eventForm.details}
+                    onChange={handleEventChange('details')}
+                  />
+                </div>
+              </div>
+
+              <div className="app-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={closeEventDialog}>
+                  বন্ধ করুন
+                </button>
+                <button type="submit" className="inline-link-btn">
+                  ইভেন্ট যোগ করুন
+                </button>
+              </div>
             </form>
-          ) : (
-            <p className="muted-text compact-text">
-              ইভেন্ট তৈরি শুধু অ্যাডমিনদের জন্য চালু আছে।
-            </p>
-          )}
-        </article>
-      </div>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 };
