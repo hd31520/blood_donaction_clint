@@ -7,6 +7,7 @@ import './styles/global.css';
 import './styles/final-polish.css';
 import './styles/premium-ui.css';
 import './styles/professional-app.css';
+import './styles/mobile-navbar-fix.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
