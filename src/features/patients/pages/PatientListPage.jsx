@@ -171,6 +171,12 @@ export const PatientListPage = () => {
     setFormLocationResetKey((previous) => previous + 1);
   };
 
+  const closeCreateDialog = () => {
+    if (!isSubmitting) {
+      setIsCreateOpen(false);
+    }
+  };
+
   const handleSharePatient = async (patient) => {
     const shareText = buildPatientShareText(patient);
     const shareUrl = `${window.location.origin}/patients/${patient.id}`;
@@ -245,92 +251,115 @@ export const PatientListPage = () => {
           <p className="eyebrow">রক্তের প্রয়োজন</p>
           <h2>রোগী ও রক্তের অনুরোধের তালিকা</h2>
         </div>
-        <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen((previous) => !previous)}>
-          {isCreateOpen ? 'ফর্ম বন্ধ করুন' : 'রক্তের অনুরোধ দিন'}
+        <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen(true)}>
+          রক্তের অনুরোধ দিন
         </button>
       </header>
 
       {isCreateOpen ? (
-        <form className="table-card patient-create-card" onSubmit={submitCreatePatient}>
-          <h3>রক্তের অনুরোধ দিন</h3>
-          <div className="toolbar patient-toolbar patient-form-toolbar">
-            <label htmlFor="newPatientName">রোগীর নাম</label>
-            <input id="newPatientName" value={createForm.patientName} onChange={(event) => setCreateForm((previous) => ({ ...previous, patientName: event.target.value }))} placeholder="রোগীর পূর্ণ নাম" />
+        <div className="request-dialog-backdrop" role="presentation" onMouseDown={closeCreateDialog}>
+          <section
+            className="request-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="requestDialogTitle"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="request-dialog-header">
+              <div>
+                <p className="eyebrow">Public request</p>
+                <h3 id="requestDialogTitle">রক্তের অনুরোধ দিন</h3>
+                <p className="muted-text">লগিন ছাড়াই জরুরি রক্তের অনুরোধ পাঠানো যাবে।</p>
+              </div>
+              <button type="button" className="request-dialog-close" aria-label="Close request dialog" onClick={closeCreateDialog} disabled={isSubmitting}>
+                ×
+              </button>
+            </div>
 
-            <label htmlFor="newPatientAge">বয়স</label>
-            <input id="newPatientAge" type="number" min="0" max="150" value={createForm.patientAge} onChange={(event) => setCreateForm((previous) => ({ ...previous, patientAge: event.target.value }))} />
+            <form className="request-dialog-form" onSubmit={submitCreatePatient}>
+              <div className="request-dialog-grid">
+                <label htmlFor="newPatientName">রোগীর নাম</label>
+                <input id="newPatientName" value={createForm.patientName} onChange={(event) => setCreateForm((previous) => ({ ...previous, patientName: event.target.value }))} placeholder="রোগীর পূর্ণ নাম" />
 
-            <label htmlFor="newBloodGroup">রক্তের গ্রুপ</label>
-            <select id="newBloodGroup" value={createForm.bloodGroup} onChange={(event) => setCreateForm((previous) => ({ ...previous, bloodGroup: event.target.value }))}>
-              <option value="">নির্বাচন করুন</option>
-              {BLOOD_GROUPS.map((group) => <option key={group} value={group}>{group}</option>)}
-            </select>
+                <label htmlFor="newPatientAge">বয়স</label>
+                <input id="newPatientAge" type="number" min="0" max="150" value={createForm.patientAge} onChange={(event) => setCreateForm((previous) => ({ ...previous, patientAge: event.target.value }))} />
 
-            <label htmlFor="newUnitsRequired">ব্যাগ প্রয়োজন</label>
-            <input id="newUnitsRequired" type="number" min="1" value={createForm.unitsRequired} onChange={(event) => setCreateForm((previous) => ({ ...previous, unitsRequired: event.target.value }))} />
+                <label htmlFor="newBloodGroup">রক্তের গ্রুপ</label>
+                <select id="newBloodGroup" value={createForm.bloodGroup} onChange={(event) => setCreateForm((previous) => ({ ...previous, bloodGroup: event.target.value }))}>
+                  <option value="">নির্বাচন করুন</option>
+                  {BLOOD_GROUPS.map((group) => <option key={group} value={group}>{group}</option>)}
+                </select>
 
-            <label htmlFor="newHospital">হাসপাতাল</label>
-            <select id="newHospital" value={createForm.hospitalId} onChange={(event) => setCreateForm((previous) => ({ ...previous, hospitalId: event.target.value }))}>
-              <option value="">হাসপাতাল নির্বাচন করুন</option>
-              {hospitalOptions.map((hospital) => <option key={hospital.id} value={hospital.id}>{hospital.name}</option>)}
-            </select>
+                <label htmlFor="newUnitsRequired">ব্যাগ প্রয়োজন</label>
+                <input id="newUnitsRequired" type="number" min="1" value={createForm.unitsRequired} onChange={(event) => setCreateForm((previous) => ({ ...previous, unitsRequired: event.target.value }))} />
 
-            <label htmlFor="newUrgency">জরুরিতা</label>
-            <select id="newUrgency" value={createForm.urgencyLevel} onChange={(event) => setCreateForm((previous) => ({ ...previous, urgencyLevel: event.target.value }))}>
-              <option value="low">কম</option>
-              <option value="medium">মাঝারি</option>
-              <option value="high">জরুরি</option>
-              <option value="critical">অতি জরুরি</option>
-            </select>
+                <label htmlFor="newHospital">হাসপাতাল</label>
+                <select id="newHospital" value={createForm.hospitalId} onChange={(event) => setCreateForm((previous) => ({ ...previous, hospitalId: event.target.value }))}>
+                  <option value="">হাসপাতাল নির্বাচন করুন</option>
+                  {hospitalOptions.map((hospital) => <option key={hospital.id} value={hospital.id}>{hospital.name}</option>)}
+                </select>
 
-            <label htmlFor="newContactPhone">যোগাযোগ নম্বর</label>
-            <input id="newContactPhone" value={createForm.contactPhone} onChange={(event) => setCreateForm((previous) => ({ ...previous, contactPhone: event.target.value }))} placeholder="01XXXXXXXXX" />
+                <label htmlFor="newUrgency">জরুরিতা</label>
+                <select id="newUrgency" value={createForm.urgencyLevel} onChange={(event) => setCreateForm((previous) => ({ ...previous, urgencyLevel: event.target.value }))}>
+                  <option value="low">কম</option>
+                  <option value="medium">মাঝারি</option>
+                  <option value="high">জরুরি</option>
+                  <option value="critical">অতি জরুরি</option>
+                </select>
 
-            <label htmlFor="newContactPerson">যোগাযোগের ব্যক্তি</label>
-            <input id="newContactPerson" value={createForm.contactPerson} onChange={(event) => setCreateForm((previous) => ({ ...previous, contactPerson: event.target.value }))} />
+                <label htmlFor="newContactPhone">যোগাযোগ নম্বর</label>
+                <input id="newContactPhone" value={createForm.contactPhone} onChange={(event) => setCreateForm((previous) => ({ ...previous, contactPhone: event.target.value }))} placeholder="01XXXXXXXXX" />
 
-            <label htmlFor="newRequiredDate">প্রয়োজনের তারিখ</label>
-            <input id="newRequiredDate" type="date" value={createForm.requiredDate} onChange={(event) => setCreateForm((previous) => ({ ...previous, requiredDate: event.target.value }))} />
-          </div>
+                <label htmlFor="newContactPerson">যোগাযোগের ব্যক্তি</label>
+                <input id="newContactPerson" value={createForm.contactPerson} onChange={(event) => setCreateForm((previous) => ({ ...previous, contactPerson: event.target.value }))} />
 
-          <LocationSelector
-            mode="required"
-            idPrefix="patientCreate"
-            resetKey={formLocationResetKey}
-            enableAutoDetect={true}
-            onChange={(value) => {
-              const nextLocation = {
-                divisionId: value.divisionId,
-                districtId: value.districtId,
-                upazilaId: value.upazilaId,
-                unionId: value.unionId,
-                areaName: value.locationNames?.union || value.unionName || '',
-              };
-              setCreateLocation(nextLocation);
-              if (nextLocation.divisionId && nextLocation.districtId && nextLocation.upazilaId) {
-                saveLastUsedLocation(nextLocation);
-              }
-            }}
-          />
+                <label htmlFor="newRequiredDate">প্রয়োজনের তারিখ</label>
+                <input id="newRequiredDate" type="date" value={createForm.requiredDate} onChange={(event) => setCreateForm((previous) => ({ ...previous, requiredDate: event.target.value }))} />
+              </div>
 
-          <div className="toolbar patient-toolbar patient-form-toolbar">
-            <label htmlFor="newNeedsRegularBlood">নিয়মিত রক্ত লাগে</label>
-            <input id="newNeedsRegularBlood" type="checkbox" checked={createForm.needsRegularBlood} onChange={(event) => setCreateForm((previous) => ({ ...previous, needsRegularBlood: event.target.checked, medicalCondition: event.target.checked ? previous.medicalCondition : 'none' }))} />
+              <LocationSelector
+                mode="required"
+                idPrefix="patientCreate"
+                resetKey={formLocationResetKey}
+                enableAutoDetect={true}
+                onChange={(value) => {
+                  const nextLocation = {
+                    divisionId: value.divisionId,
+                    districtId: value.districtId,
+                    upazilaId: value.upazilaId,
+                    unionId: value.unionId,
+                    areaName: value.locationNames?.union || value.unionName || '',
+                  };
+                  setCreateLocation(nextLocation);
+                  if (nextLocation.divisionId && nextLocation.districtId && nextLocation.upazilaId) {
+                    saveLastUsedLocation(nextLocation);
+                  }
+                }}
+              />
 
-            <label htmlFor="newMedicalCondition">অবস্থা</label>
-            <select id="newMedicalCondition" value={createForm.medicalCondition} onChange={(event) => setCreateForm((previous) => ({ ...previous, medicalCondition: event.target.value }))} disabled={!createForm.needsRegularBlood}>
-              {MEDICAL_CONDITION_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-            </select>
+              <div className="request-dialog-grid request-dialog-grid-secondary">
+                <label htmlFor="newNeedsRegularBlood">নিয়মিত রক্ত লাগে</label>
+                <input id="newNeedsRegularBlood" type="checkbox" checked={createForm.needsRegularBlood} onChange={(event) => setCreateForm((previous) => ({ ...previous, needsRegularBlood: event.target.checked, medicalCondition: event.target.checked ? previous.medicalCondition : 'none' }))} />
 
-            <label htmlFor="newDescription">বিবরণ</label>
-            <input id="newDescription" value={createForm.description} onChange={(event) => setCreateForm((previous) => ({ ...previous, description: event.target.value }))} />
+                <label htmlFor="newMedicalCondition">অবস্থা</label>
+                <select id="newMedicalCondition" value={createForm.medicalCondition} onChange={(event) => setCreateForm((previous) => ({ ...previous, medicalCondition: event.target.value }))} disabled={!createForm.needsRegularBlood}>
+                  {MEDICAL_CONDITION_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
 
-            <label htmlFor="newNotes">নোট</label>
-            <input id="newNotes" value={createForm.notes} onChange={(event) => setCreateForm((previous) => ({ ...previous, notes: event.target.value }))} />
+                <label htmlFor="newDescription">বিবরণ</label>
+                <input id="newDescription" value={createForm.description} onChange={(event) => setCreateForm((previous) => ({ ...previous, description: event.target.value }))} />
 
-            <button type="submit" className="inline-link-btn" disabled={isSubmitting}>{isSubmitting ? 'পাঠানো হচ্ছে...' : 'অনুরোধ পাঠান'}</button>
-          </div>
-        </form>
+                <label htmlFor="newNotes">নোট</label>
+                <input id="newNotes" value={createForm.notes} onChange={(event) => setCreateForm((previous) => ({ ...previous, notes: event.target.value }))} />
+              </div>
+
+              <div className="request-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={closeCreateDialog} disabled={isSubmitting}>বন্ধ করুন</button>
+                <button type="submit" className="inline-link-btn" disabled={isSubmitting}>{isSubmitting ? 'পাঠানো হচ্ছে...' : 'অনুরোধ পাঠান'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
       ) : null}
 
       <div className="public-banner">🔴 জরুরি রক্তের অনুরোধ — সবাই দেখতে পারবেন, সবাই অনুরোধ করতে পারবেন</div>
