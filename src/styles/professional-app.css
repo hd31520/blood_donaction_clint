@@ -153,6 +153,7 @@ body::after {
 .error-boundary-card,
 .request-dialog,
 .filter-dialog,
+.app-dialog,
 .donor-dialog,
 .modal-card,
 .card,
@@ -240,7 +241,8 @@ label {
 .auth-form,
 .stack-form,
 .request-dialog-grid,
-.filter-dialog-grid {
+.filter-dialog-grid,
+.app-dialog-grid {
   gap: 0.6rem !important;
 }
 
@@ -256,7 +258,8 @@ label {
   box-shadow: var(--app-shadow-soft);
 }
 
-.filter-dialog-backdrop {
+.filter-dialog-backdrop,
+.app-dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 20000;
@@ -268,7 +271,8 @@ label {
   -webkit-backdrop-filter: blur(10px);
 }
 
-.filter-dialog {
+.filter-dialog,
+.app-dialog {
   width: min(720px, 100%);
   max-height: min(88vh, 760px);
   overflow: auto;
@@ -277,7 +281,12 @@ label {
   padding: var(--app-pad) !important;
 }
 
-.filter-dialog-header {
+.app-dialog {
+  width: min(820px, 100%);
+}
+
+.filter-dialog-header,
+.app-dialog-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -286,13 +295,15 @@ label {
   border-bottom: 1px solid var(--line);
 }
 
-.filter-dialog-header h3 {
+.filter-dialog-header h3,
+.app-dialog-header h3 {
   margin: 0.15rem 0 0;
   font-family: 'Sora', 'Noto Sans Bengali', sans-serif;
   letter-spacing: -0.035em;
 }
 
-.filter-dialog-close {
+.filter-dialog-close,
+.app-dialog-close {
   flex: 0 0 auto;
   width: 40px;
   min-height: 40px;
@@ -305,49 +316,66 @@ label {
   line-height: 1;
 }
 
-.filter-dialog-form {
+.filter-dialog-form,
+.app-dialog-form {
   display: grid;
   gap: 0.85rem;
   padding-top: 0.85rem;
 }
 
-.filter-dialog-grid {
+.filter-dialog-grid,
+.app-dialog-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
   align-items: end;
 }
 
+.app-dialog-full {
+  grid-column: 1 / -1;
+}
+
 .filter-dialog-grid input,
 .filter-dialog-grid select,
 .filter-dialog .location-selector select,
-.filter-dialog .location-selector input {
+.filter-dialog .location-selector input,
+.app-dialog-grid input,
+.app-dialog-grid select,
+.app-dialog .location-selector select,
+.app-dialog .location-selector input {
   width: 100%;
   background: rgba(255, 255, 255, 0.92);
 }
 
-.filter-dialog .location-selector {
+.filter-dialog .location-selector,
+.app-dialog .location-selector {
   padding: 0.75rem !important;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.46);
 }
 
-.filter-dialog-actions {
+.filter-dialog-actions,
+.app-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.55rem;
   padding-top: 0.25rem;
 }
 
-html.dark .filter-dialog {
+html.dark .filter-dialog,
+html.dark .app-dialog {
   background: var(--glass-bg-strong, rgba(17, 29, 29, 0.96));
 }
 
 html.dark .filter-dialog-grid input,
 html.dark .filter-dialog-grid select,
 html.dark .filter-dialog .location-selector,
-html.dark .filter-dialog-close {
+html.dark .filter-dialog-close,
+html.dark .app-dialog-grid input,
+html.dark .app-dialog-grid select,
+html.dark .app-dialog .location-selector,
+html.dark .app-dialog-close {
   background: rgba(9, 15, 15, 0.76);
   color: var(--text-primary);
   border-color: var(--line);
@@ -393,6 +421,7 @@ html.dark .filter-dialog-close {
 .error-boundary-actions,
 .request-dialog-actions,
 .filter-dialog-actions,
+.app-dialog-actions,
 .donor-dialog-actions {
   gap: 0.45rem !important;
 }
@@ -546,7 +575,8 @@ html.dark .filter-dialog-close {
   .home-filter-toolbar,
   .profile-form-grid,
   .request-dialog-grid,
-  .filter-dialog-grid {
+  .filter-dialog-grid,
+  .app-dialog-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -610,25 +640,30 @@ html.dark .filter-dialog-close {
   .request-dialog-actions .inline-link-btn,
   .request-dialog-actions button,
   .filter-dialog-actions .inline-link-btn,
-  .filter-dialog-actions button {
+  .filter-dialog-actions button,
+  .app-dialog-actions .inline-link-btn,
+  .app-dialog-actions button {
     width: 100% !important;
   }
 
   .request-dialog-backdrop,
-  .filter-dialog-backdrop {
+  .filter-dialog-backdrop,
+  .app-dialog-backdrop {
     align-items: end !important;
     padding: 0 !important;
   }
 
   .request-dialog,
-  .filter-dialog {
+  .filter-dialog,
+  .app-dialog {
     width: 100% !important;
     max-height: 92vh !important;
     border-radius: 22px 22px 0 0 !important;
   }
 
   .request-dialog-actions,
-  .filter-dialog-actions {
+  .filter-dialog-actions,
+  .app-dialog-actions {
     flex-direction: column-reverse !important;
   }
 
