@@ -69,6 +69,7 @@ export const PatientListPage = () => {
     bloodGroup: '',
     unitsRequired: '1',
     hospitalId: '',
+    hospitalName: '',
     urgencyLevel: 'medium',
     contactPhone: '',
     contactPerson: '',
@@ -158,6 +159,7 @@ export const PatientListPage = () => {
       bloodGroup: '',
       unitsRequired: '1',
       hospitalId: '',
+      hospitalName: '',
       urgencyLevel: 'medium',
       contactPhone: '',
       contactPerson: '',
@@ -214,6 +216,7 @@ export const PatientListPage = () => {
         bloodGroup: createForm.bloodGroup,
         unitsRequired: Number(createForm.unitsRequired) || 1,
         hospital: createForm.hospitalId || undefined,
+        hospitalName: !createForm.hospitalId && createForm.hospitalName.trim() ? createForm.hospitalName.trim() : undefined,
         location: {
           division: createLocation.divisionId,
           district: createLocation.districtId,
@@ -293,11 +296,24 @@ export const PatientListPage = () => {
                 <label htmlFor="newUnitsRequired">ব্যাগ প্রয়োজন</label>
                 <input id="newUnitsRequired" type="number" min="1" value={createForm.unitsRequired} onChange={(event) => setCreateForm((previous) => ({ ...previous, unitsRequired: event.target.value }))} />
 
-                <label htmlFor="newHospital">হাসপাতাল</label>
-                <select id="newHospital" value={createForm.hospitalId} onChange={(event) => setCreateForm((previous) => ({ ...previous, hospitalId: event.target.value }))}>
-                  <option value="">হাসপাতাল নির্বাচন করুন</option>
+                <label htmlFor="newHospital">হাসপাতাল সিলেক্ট করুন</label>
+                <select
+                  id="newHospital"
+                  value={createForm.hospitalId}
+                  onChange={(event) => setCreateForm((previous) => ({ ...previous, hospitalId: event.target.value, hospitalName: event.target.value ? '' : previous.hospitalName }))}
+                >
+                  <option value="">লিস্টে না থাকলে নিচে লিখুন</option>
                   {hospitalOptions.map((hospital) => <option key={hospital.id} value={hospital.id}>{hospital.name}</option>)}
                 </select>
+
+                <label htmlFor="newHospitalName">হাসপাতালের নাম</label>
+                <input
+                  id="newHospitalName"
+                  value={createForm.hospitalName}
+                  disabled={Boolean(createForm.hospitalId)}
+                  onChange={(event) => setCreateForm((previous) => ({ ...previous, hospitalName: event.target.value }))}
+                  placeholder={createForm.hospitalId ? 'হাসপাতাল select করা হয়েছে' : 'লিস্টে না থাকলে হাসপাতালের নাম লিখুন'}
+                />
 
                 <label htmlFor="newUrgency">জরুরিতা</label>
                 <select id="newUrgency" value={createForm.urgencyLevel} onChange={(event) => setCreateForm((previous) => ({ ...previous, urgencyLevel: event.target.value }))}>
