@@ -34,6 +34,7 @@ export const RoleManagementPage = () => {
   const [form, setForm] = useState(BASE_FORM);
   const [locationKey, setLocationKey] = useState(0);
   const [roleDrafts, setRoleDrafts] = useState({});
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [managementMeta, setManagementMeta] = useState({
     roles: [],
     assignableRoles: [],
@@ -137,8 +138,14 @@ export const RoleManagementPage = () => {
   };
 
   const resetCreateForm = () => {
-    setForm(BASE_FORM);
+    setForm((previous) => ({ ...BASE_FORM, role: managementMeta.defaultCreateRole || allowedRoles[0] || previous.role || '' }));
     setLocationKey((previous) => previous + 1);
+  };
+
+  const closeCreateDialog = () => {
+    if (!isSubmitting) {
+      setIsCreateDialogOpen(false);
+    }
   };
 
   const submitCreateUser = async (event) => {
@@ -193,6 +200,7 @@ export const RoleManagementPage = () => {
 
       toast.success('ইউজার তৈরি হয়েছে।');
       resetCreateForm();
+      setIsCreateDialogOpen(false);
       await loadUsers();
     } catch (requestError) {
       toast.error(requestError?.response?.data?.message || 'ইউজার তৈরি করা যায়নি।');
@@ -219,85 +227,97 @@ export const RoleManagementPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">ব্যবস্থাপনা</p>
-        <h2>Role ব্যবস্থাপনা</h2>
-        <p className="role-scope">আপনার অনুমোদিত এলাকা ও hierarchy অনুযায়ী ইউজার পরিচালনা করুন।</p>
+        <div>
+          <p className="eyebrow">ব্যবস্থাপনা</p>
+          <h2>Role ব্যবস্থাপনা</h2>
+        </div>
+        <button type="button" className="inline-link-btn" onClick={() => setIsCreateDialogOpen(true)} disabled={isMetaLoading || allowedRoles.length === 0}>
+          ইউজার তৈরি করুন
+        </button>
       </header>
 
-      <div className="panel-grid">
-        {(managementMeta.roles || []).map((item) => (
-          <article className="panel-card" key={item.role}>
-            <p className="eyebrow">{item.badge}</p>
-            <h3>{item.title}</h3>
-            <p className="muted-text">{item.description}</p>
-          </article>
-        ))}
-      </div>
+      {isCreateDialogOpen ? (
+        <div className="app-dialog-backdrop" role="presentation" onMouseDown={closeCreateDialog}>
+          <section className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="createUserDialogTitle" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="app-dialog-header">
+              <div>
+                <p className="eyebrow">নতুন ইউজার</p>
+                <h3 id="createUserDialogTitle">ইউজার তৈরি করুন</h3>
+              </div>
+              <button type="button" className="app-dialog-close" aria-label="Close create user dialog" onClick={closeCreateDialog} disabled={isSubmitting}>
+                ×
+              </button>
+            </div>
 
-      <article className="panel-card role-management-section">
-        <h3>ইউজার তৈরি করুন</h3>
-        <form className="profile-form-grid" onSubmit={submitCreateUser}>
-          <div className="home-filter-field">
-            <label htmlFor="userName">নাম</label>
-            <input id="userName" value={form.name} onChange={handleCreateChange('name')} />
-          </div>
-          <div className="home-filter-field">
-            <label htmlFor="userEmail">ইমেইল</label>
-            <input id="userEmail" type="email" value={form.email} onChange={handleCreateChange('email')} />
-          </div>
-          <div className="home-filter-field">
-            <label htmlFor="userPassword">পাসওয়ার্ড</label>
-            <input id="userPassword" type="password" value={form.password} onChange={handleCreateChange('password')} />
-          </div>
-          <div className="home-filter-field">
-            <label htmlFor="userBloodGroup">রক্তের গ্রুপ</label>
-            <select id="userBloodGroup" value={form.bloodGroup} onChange={handleCreateChange('bloodGroup')}>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
-          <div className="home-filter-field">
-            <label htmlFor="userRole">Role</label>
-            <select id="userRole" value={form.role} onChange={handleCreateChange('role')} disabled={isMetaLoading || allowedRoles.length === 0}>
-              {allowedRoles.length === 0 ? (
-                <option value="">দেওয়ার মতো role নেই</option>
-              ) : (
-                allowedRoles.map((role) => (
-                  <option key={role} value={role}>{formatRoleLabel(role)}</option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="home-filter-field">
-            <label htmlFor="userPhone">মোবাইল</label>
-            <input id="userPhone" value={form.phone} onChange={handleCreateChange('phone')} />
-          </div>
-          <div className="home-filter-field profile-full-width">
-            <label htmlFor="userLocation">ঠিকানা</label>
-            <input id="userLocation" value={form.location} onChange={handleCreateChange('location')} />
-          </div>
-          <div className="profile-full-width">
-            <LocationSelector
-              mode="filter"
-              idPrefix="roleManagement"
-              resetKey={locationKey}
-              enableAutoDetect={false}
-              onChange={handleCreateLocationChange}
-            />
-          </div>
-          <div className="profile-full-width role-management-actions">
-            <button type="submit" disabled={isSubmitting || isMetaLoading || allowedRoles.length === 0} className="inline-link-btn">
-              {isSubmitting ? 'তৈরি হচ্ছে...' : 'ইউজার তৈরি করুন'}
-            </button>
-          </div>
-        </form>
-      </article>
+            <form className="app-dialog-form" onSubmit={submitCreateUser}>
+              <div className="app-dialog-grid">
+                <div className="home-filter-field">
+                  <label htmlFor="userName">নাম</label>
+                  <input id="userName" value={form.name} onChange={handleCreateChange('name')} />
+                </div>
+                <div className="home-filter-field">
+                  <label htmlFor="userEmail">ইমেইল</label>
+                  <input id="userEmail" type="email" value={form.email} onChange={handleCreateChange('email')} />
+                </div>
+                <div className="home-filter-field">
+                  <label htmlFor="userPassword">পাসওয়ার্ড</label>
+                  <input id="userPassword" type="password" value={form.password} onChange={handleCreateChange('password')} />
+                </div>
+                <div className="home-filter-field">
+                  <label htmlFor="userBloodGroup">রক্তের গ্রুপ</label>
+                  <select id="userBloodGroup" value={form.bloodGroup} onChange={handleCreateChange('bloodGroup')}>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div className="home-filter-field">
+                  <label htmlFor="userRole">Role</label>
+                  <select id="userRole" value={form.role} onChange={handleCreateChange('role')} disabled={isMetaLoading || allowedRoles.length === 0}>
+                    {allowedRoles.length === 0 ? (
+                      <option value="">দেওয়ার মতো role নেই</option>
+                    ) : (
+                      allowedRoles.map((role) => (
+                        <option key={role} value={role}>{formatRoleLabel(role)}</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div className="home-filter-field">
+                  <label htmlFor="userPhone">মোবাইল</label>
+                  <input id="userPhone" value={form.phone} onChange={handleCreateChange('phone')} />
+                </div>
+                <div className="home-filter-field app-dialog-full">
+                  <label htmlFor="userLocation">ঠিকানা</label>
+                  <input id="userLocation" value={form.location} onChange={handleCreateChange('location')} />
+                </div>
+              </div>
+
+              <LocationSelector
+                mode="filter"
+                idPrefix="roleManagement"
+                resetKey={locationKey}
+                enableAutoDetect={false}
+                onChange={handleCreateLocationChange}
+              />
+
+              <div className="app-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={closeCreateDialog} disabled={isSubmitting}>
+                  বন্ধ করুন
+                </button>
+                <button type="submit" disabled={isSubmitting || isMetaLoading || allowedRoles.length === 0} className="inline-link-btn">
+                  {isSubmitting ? 'তৈরি হচ্ছে...' : 'ইউজার তৈরি করুন'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
 
       <article className="panel-card role-management-section">
         <h3>আপনার এলাকার ইউজার</h3>
