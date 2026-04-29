@@ -60,6 +60,7 @@ export const PatientListPage = () => {
   const [locationFilters, setLocationFilters] = useState({ divisionId: '', districtId: '', upazilaId: '', unionId: '' });
   const [locationResetKey, setLocationResetKey] = useState(0);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hospitalOptions, setHospitalOptions] = useState([]);
   const [formLocationResetKey, setFormLocationResetKey] = useState(0);
@@ -179,6 +180,14 @@ export const PatientListPage = () => {
     }
   };
 
+  const closeFilterDialog = () => {
+    setIsFilterOpen(false);
+  };
+
+  const clearAndKeepFilterDialog = () => {
+    clearFilters();
+  };
+
   const handleSharePatient = async (patient) => {
     const shareText = buildPatientShareText(patient);
     const shareUrl = `${window.location.origin}/patients/${patient.id}`;
@@ -254,10 +263,69 @@ export const PatientListPage = () => {
           <p className="eyebrow">রক্তের প্রয়োজন</p>
           <h2>রোগী ও রক্তের অনুরোধের তালিকা</h2>
         </div>
-        <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen(true)}>
-          রক্তের অনুরোধ দিন
-        </button>
+        <div className="patient-row-actions">
+          <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsFilterOpen(true)}>
+            Filter
+          </button>
+          <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen(true)}>
+            রক্তের অনুরোধ দিন
+          </button>
+        </div>
       </header>
+
+      {isFilterOpen ? (
+        <div className="filter-dialog-backdrop" role="presentation" onMouseDown={closeFilterDialog}>
+          <section
+            className="filter-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="patientFilterDialogTitle"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="filter-dialog-header">
+              <div>
+                <p className="eyebrow">Filter</p>
+                <h3 id="patientFilterDialogTitle">রক্তের অনুরোধ খুঁজুন</h3>
+              </div>
+              <button type="button" className="filter-dialog-close" aria-label="Close filter dialog" onClick={closeFilterDialog}>
+                ×
+              </button>
+            </div>
+
+            <div className="filter-dialog-form">
+              <div className="filter-dialog-grid">
+                <label htmlFor="patientName">রোগীর নাম</label>
+                <input id="patientName" value={patientName} onChange={(event) => setPatientName(event.target.value)} placeholder="রোগীর নামে খুঁজুন" />
+
+                <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
+                <select id="bloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
+                  <option value="">সব</option>
+                  {BLOOD_GROUPS.map((group) => <option key={group} value={group}>{group}</option>)}
+                </select>
+
+                <label htmlFor="status">অবস্থা</label>
+                <select id="status" value={status} onChange={(event) => setStatus(event.target.value)}>
+                  <option value="">সব</option>
+                  {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{STATUS_LABELS[item] || item}</option>)}
+                </select>
+              </div>
+
+              <LocationSelector
+                mode="filter"
+                idPrefix="patientList"
+                resetKey={locationResetKey}
+                enableAutoDetect={false}
+                onChange={(value) => setLocationFilters({ divisionId: value.divisionId, districtId: value.districtId, upazilaId: value.upazilaId, unionId: value.unionId })}
+              />
+
+              <div className="filter-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={clearAndKeepFilterDialog}>ফিল্টার মুছুন</button>
+                <button type="button" className="inline-link-btn" onClick={closeFilterDialog}>Apply Filter</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {isCreateOpen ? (
         <div className="request-dialog-backdrop" role="presentation" onMouseDown={closeCreateDialog}>
@@ -379,33 +447,6 @@ export const PatientListPage = () => {
       ) : null}
 
       <div className="public-banner">🔴 জরুরি রক্তের অনুরোধ — সবাই দেখতে পারবেন, সবাই অনুরোধ করতে পারবেন</div>
-
-      <div className="toolbar patient-toolbar patient-filter-toolbar">
-        <label htmlFor="patientName">রোগীর নাম</label>
-        <input id="patientName" value={patientName} onChange={(event) => setPatientName(event.target.value)} placeholder="রোগীর নামে খুঁজুন" />
-
-        <label htmlFor="bloodGroup">রক্তের গ্রুপ</label>
-        <select id="bloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
-          <option value="">সব</option>
-          {BLOOD_GROUPS.map((group) => <option key={group} value={group}>{group}</option>)}
-        </select>
-
-        <label htmlFor="status">অবস্থা</label>
-        <select id="status" value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">সব</option>
-          {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{STATUS_LABELS[item] || item}</option>)}
-        </select>
-
-        <button type="button" className="inline-link-btn" onClick={clearFilters}>ফিল্টার মুছুন</button>
-      </div>
-
-      <LocationSelector
-        mode="filter"
-        idPrefix="patientList"
-        resetKey={locationResetKey}
-        enableAutoDetect={false}
-        onChange={(value) => setLocationFilters({ divisionId: value.divisionId, districtId: value.districtId, upazilaId: value.upazilaId, unionId: value.unionId })}
-      />
 
       {error ? <p className="auth-error">{error}</p> : null}
       {isLoading ? <p className="page-loader">তালিকা লোড হচ্ছে...</p> : null}
