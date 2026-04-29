@@ -26,7 +26,13 @@ const formatDate = (value) => {
     return 'তারিখ দেওয়া নেই';
   }
 
-  return new Date(value).toLocaleDateString('bn-BD', {
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return 'তারিখ দেওয়া নেই';
+  }
+
+  return parsed.toLocaleDateString('bn-BD', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -59,6 +65,7 @@ export const HomePage = () => {
   const [localAdmins, setLocalAdmins] = useState([]);
   const [meta, setMeta] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDonorDialogOpen, setIsDonorDialogOpen] = useState(false);
 
   const filters = useMemo(
     () => ({
@@ -82,28 +89,52 @@ export const HomePage = () => {
   );
 
   useEffect(() => {
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setIsLoading(true);
 
       try {
-        const [patientResult, adminResult] = await Promise.all([
+        const [patientResult, adminResult] = await Promise.allSettled([
           patientService.list(filters),
           userService.getPublicLocalAdmins(locationFilters),
         ]);
 
-        setBloodNeeds(patientResult.data);
-        setMeta(patientResult.meta);
-        setLocalAdmins(adminResult);
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (patientResult.status === 'fulfilled') {
+          setBloodNeeds(Array.isArray(patientResult.value?.data) ? patientResult.value.data : []);
+          setMeta(patientResult.value?.meta || null);
+        } else {
+          setBloodNeeds([]);
+          setMeta(null);
+        }
+
+        if (adminResult.status === 'fulfilled') {
+          setLocalAdmins(Array.isArray(adminResult.value) ? adminResult.value : []);
+        } else {
+          setLocalAdmins([]);
+        }
+
+        if (patientResult.status === 'rejected' && adminResult.status === 'rejected') {
+          toast.error('তথ্য লোড করা যায়নি।');
+        }
       } catch (requestError) {
-        toast.error(requestError?.response?.data?.message || 'তথ্য লোড করা যায়নি।');
-        setBloodNeeds([]);
-        setLocalAdmins([]);
+        if (!controller.signal.aborted) {
+          toast.error(requestError?.response?.data?.message || 'তথ্য লোড করা যায়নি।');
+          setBloodNeeds([]);
+          setLocalAdmins([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }, 300);
 
     return () => {
+      controller.abort();
       window.clearTimeout(timer);
     };
   }, [filters, locationFilters]);
@@ -121,64 +152,25 @@ export const HomePage = () => {
   };
 
   return (
-    <section className="feature-page reveal home-page-stack public-home startup-home">
-      <header className="startup-hero">
-        <div className="startup-hero-copy">
-          <p className="eyebrow">বাংলাদেশের জন্য কমিউনিটি ব্লাড নেটওয়ার্ক</p>
-          <h1>জরুরি রক্তের অনুরোধ, স্থানীয় দায়িত্বশীল ও donor matching—এক জায়গায়।</h1>
-          <p className="startup-hero-text">
-            বাংলা ব্লাড রোগী, পরিবার, স্থানীয় অ্যাডমিন ও রক্তদাতাদের দ্রুত সংযোগ করায়। Public request দেখা যায়, donor data নিরাপদ থাকে।
-          </p>
-          <div className="startup-hero-actions">
-            <Link to="/patients" className="inline-link-btn startup-primary-cta">
-              রক্তের অনুরোধ দিন
-            </Link>
-            <Link to={isAuthenticated ? '/dashboard' : '/login'} className="inline-link-btn ghost-action">
-              {isAuthenticated ? 'ড্যাশবোর্ড খুলুন' : 'লগইন করুন'}
-            </Link>
-          </div>
-          <div className="startup-trust-row" aria-label="Platform highlights">
-            <span>✓ Location-wise request</span>
-            <span>✓ Admin approval</span>
-            <span>✓ WhatsApp/Call support</span>
-          </div>
+    <section className="feature-page reveal home-page-stack public-home startup-home clean-home">
+      <header className="clean-home-hero">
+        <div className="blood-pulse-ring" aria-hidden="true">
+          <span />
+          <span />
+          <span />
         </div>
-
-        <div className="startup-hero-card" aria-label="Live platform summary">
-          <div className="startup-pulse-dot" />
-          <p className="eyebrow">Live overview</p>
-          <h3>{Number(meta?.total || 0).toLocaleString('bn-BD')}টি রক্তের অনুরোধ</h3>
-          <p className="muted-text">বর্তমান filter অনুযায়ী public request tracking</p>
-          <div className="startup-metric-grid">
-            <div>
-              <strong>{bloodNeeds.length.toLocaleString('bn-BD')}</strong>
-              <span>দেখানো হচ্ছে</span>
-            </div>
-            <div>
-              <strong>{localAdmins.length.toLocaleString('bn-BD')}</strong>
-              <span>দায়িত্বশীল</span>
-            </div>
-          </div>
+        <div className="clean-home-actions">
+          <Link to="/patients" className="inline-link-btn startup-primary-cta">
+            রক্তের অনুরোধ দিন
+          </Link>
+          <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsDonorDialogOpen(true)}>
+            Add Donor
+          </button>
+          <Link to={isAuthenticated ? '/dashboard' : '/login'} className="inline-link-btn ghost-action">
+            {isAuthenticated ? 'ড্যাশবোর্ড' : 'লগইন'}
+          </Link>
         </div>
       </header>
-
-      <section className="startup-feature-strip" aria-label="Key platform features">
-        <article>
-          <span>01</span>
-          <h3>রোগীর request</h3>
-          <p>রক্তের group, hospital, location ও urgency একসাথে দেখা যায়।</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>স্থানীয় admin</h3>
-          <p>Union/Ward দায়িত্বশীলরা request verify ও coordinate করতে পারে।</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>Safe donor data</h3>
-          <p>Donor তালিকা public নয়—role-based access দিয়ে protected।</p>
-        </article>
-      </section>
 
       <section className="table-card startup-filter-card">
         <header className="panel-card-header">
@@ -315,6 +307,33 @@ export const HomePage = () => {
           </tbody>
         </table>
       </section>
+
+      {isDonorDialogOpen ? (
+        <div className="donor-dialog-backdrop" role="presentation" onClick={() => setIsDonorDialogOpen(false)}>
+          <section
+            className="donor-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="addDonorDialogTitle"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button type="button" className="donor-dialog-close" aria-label="Close donor dialog" onClick={() => setIsDonorDialogOpen(false)}>
+              ×
+            </button>
+            <p className="eyebrow">Add Donor</p>
+            <h2 id="addDonorDialogTitle">রক্তদাতা হিসেবে যুক্ত হন</h2>
+            <p className="muted-text">Account তৈরি করে donor profile complete করুন।</p>
+            <div className="donor-dialog-actions">
+              <Link to="/register" className="inline-link-btn startup-primary-cta">
+                Register
+              </Link>
+              <Link to={isAuthenticated ? '/profile' : '/login'} className="inline-link-btn ghost-action">
+                {isAuthenticated ? 'Profile' : 'Login'}
+              </Link>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 };
