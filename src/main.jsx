@@ -6,6 +6,7 @@ import { AppErrorBoundary } from './components/global/AppErrorBoundary.jsx';
 import './styles/global.css';
 import './styles/final-polish.css';
 import './styles/premium-ui.css';
+import './styles/professional-app.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
