@@ -5,7 +5,6 @@ import { Phone, Share2 } from 'lucide-react';
 
 import { LocationSelector } from '../../../components/location/LocationSelector.jsx';
 import { saveLastUsedLocation } from '../../../utils/locationMemory.js';
-import { useAuth } from '../../auth/context/AuthContext.jsx';
 import { patientService } from '../services/patientService.js';
 
 const STATUS_OPTIONS = ['pending', 'in_progress', 'fulfilled', 'cancelled'];
@@ -51,7 +50,6 @@ const buildPatientShareText = (patient) =>
   `${patient.patientName || 'একজন রোগী'} এর জন্য ${patient.bloodGroup || ''} রক্ত প্রয়োজন। লোকেশন: ${buildLocationLine(patient)}। যোগাযোগ: ${patient.contactPhone || 'উল্লেখ নেই'}`;
 
 export const PatientListPage = () => {
-  const { isAuthenticated } = useAuth();
   const [patientName, setPatientName] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [status, setStatus] = useState('');
@@ -125,7 +123,7 @@ export const PatientListPage = () => {
 
   useEffect(() => {
     const loadHospitals = async () => {
-      if (!isAuthenticated || !isCreateOpen) {
+      if (!isCreateOpen) {
         setHospitalOptions([]);
         return;
       }
@@ -143,7 +141,7 @@ export const PatientListPage = () => {
     };
 
     loadHospitals();
-  }, [createLocation.divisionId, createLocation.districtId, createLocation.upazilaId, isAuthenticated, isCreateOpen]);
+  }, [createLocation.divisionId, createLocation.districtId, createLocation.upazilaId, isCreateOpen]);
 
   const clearFilters = () => {
     setPatientName('');
@@ -247,16 +245,12 @@ export const PatientListPage = () => {
           <p className="eyebrow">রক্তের প্রয়োজন</p>
           <h2>রোগী ও রক্তের অনুরোধের তালিকা</h2>
         </div>
-        {isAuthenticated ? (
-          <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen((previous) => !previous)}>
-            {isCreateOpen ? 'ফর্ম বন্ধ করুন' : 'রক্তের অনুরোধ দিন'}
-          </button>
-        ) : (
-          <Link to="/login" className="inline-link-btn">অনুরোধ দিতে লগইন করুন</Link>
-        )}
+        <button type="button" className="inline-link-btn" onClick={() => setIsCreateOpen((previous) => !previous)}>
+          {isCreateOpen ? 'ফর্ম বন্ধ করুন' : 'রক্তের অনুরোধ দিন'}
+        </button>
       </header>
 
-      {isAuthenticated && isCreateOpen ? (
+      {isCreateOpen ? (
         <form className="table-card patient-create-card" onSubmit={submitCreatePatient}>
           <h3>রক্তের অনুরোধ দিন</h3>
           <div className="toolbar patient-toolbar">
