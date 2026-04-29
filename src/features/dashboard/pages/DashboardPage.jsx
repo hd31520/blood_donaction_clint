@@ -4,12 +4,15 @@ import { Link } from 'react-router-dom';
 
 import { RoleSummaryPanel } from '../../../components/dashboard/RoleSummaryPanel.jsx';
 import { MiniBarChart } from '../../../components/charts/MiniBarChart.jsx';
+import { analyticsService } from '../../../services/analyticsService.js';
 import { useAuth } from '../../auth/context/AuthContext.jsx';
 import { donorSearchService } from '../../donors/services/donorSearchService.js';
 import { reportService } from '../../reports/services/reportService.js';
 import { roleDashboardData } from '../config/roleDashboardData.js';
 
-const formatNumber = (value) => Number(value || 0).toLocaleString();
+const ADMIN_ROLES = ['super_admin', 'district_admin', 'upazila_admin', 'union_leader', 'ward_admin'];
+
+const formatNumber = (value) => Number(value || 0).toLocaleString('bn-BD');
 
 const toMonthLabel = (year, month) => {
   return new Date(year, month - 1, 1).toLocaleString('bn-BD', { month: 'short' });
@@ -33,8 +36,10 @@ const getRecentMonths = (count = 6) => {
 export const DashboardPage = () => {
   const { user } = useAuth();
   const roleData = roleDashboardData[user?.role] || roleDashboardData.donor;
+  const isAdmin = ADMIN_ROLES.includes(user?.role);
   const [isLoading, setIsLoading] = useState(true);
   const [summaryValues, setSummaryValues] = useState(null);
+  const [areaAnalytics, setAreaAnalytics] = useState(null);
   const [chartSeries, setChartSeries] = useState(roleData.chartSeries);
 
   useEffect(() => {
@@ -46,12 +51,13 @@ export const DashboardPage = () => {
       const months = getRecentMonths(6);
 
       try {
-        const [allDonorsResult, availableDonorsResult, monthlyReportsResult] = await Promise.allSettled([
+        const [allDonorsResult, availableDonorsResult, monthlyReportsResult, areaAnalyticsResult] = await Promise.allSettled([
           donorSearchService.searchAuthenticated({ page: 1, limit: 1 }),
           donorSearchService.searchAuthenticated({ availabilityStatus: 'available', page: 1, limit: 1 }),
           Promise.allSettled(
             months.map(({ year, month }) => reportService.getMonthlyDonorReport({ year, month })),
           ),
+          isAdmin ? analyticsService.getAdminSummary() : Promise.resolve(null),
         ]);
 
         const totalDonors = allDonorsResult.status === 'fulfilled'
@@ -94,6 +100,7 @@ export const DashboardPage = () => {
           totalDonations: latestReport?.donationFrequency?.totalDonations || 0,
         });
 
+        setAreaAnalytics(areaAnalyticsResult.status === 'fulfilled' ? areaAnalyticsResult.value : null);
         setChartSeries(dynamicChartSeries);
       } catch (error) {
         if (isMounted) {
@@ -112,7 +119,7 @@ export const DashboardPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [roleData.chartSeries]);
+  }, [isAdmin, roleData.chartSeries]);
 
   const resolvedSummaries = useMemo(() => {
     if (!summaryValues) {
@@ -145,8 +152,8 @@ export const DashboardPage = () => {
     <section className="feature-page reveal">
       <header className="feature-header">
         <div>
-          <p className="eyebrow">Role ড্যাশবোর্ড</p>
-          <h2>{roleData.label} কন্ট্রোল সেন্টার</h2>
+          <p className="eyebrow">Analytics</p>
+          <h2>{roleData.label} ড্যাশবোর্ড</h2>
         </div>
         <Link to="/home" className="inline-link-btn">
           হোম
@@ -155,6 +162,31 @@ export const DashboardPage = () => {
 
       {isLoading ? <p className="page-loader">লাইভ ড্যাশবোর্ড তথ্য রিফ্রেশ হচ্ছে...</p> : null}
 
+      {isAdmin && areaAnalytics ? (
+        <section className="kpi-grid analytics-grid" aria-label="Area analytics">
+          <article className="kpi-card">
+            <p className="eyebrow">রক্তের অনুরোধ</p>
+            <strong>{formatNumber(areaAnalytics.bloodRequests?.total)}</strong>
+            <span className="muted-text">আপনার এলাকার মোট request</span>
+          </article>
+          <article className="kpi-card">
+            <p className="eyebrow">অপেক্ষমাণ</p>
+            <strong>{formatNumber(areaAnalytics.bloodRequests?.pending)}</strong>
+            <span className="muted-text">এখনো pending</span>
+          </article>
+          <article className="kpi-card">
+            <p className="eyebrow">সাইট ভিজিট</p>
+            <strong>{formatNumber(areaAnalytics.patientVisitors?.totalVisits)}</strong>
+            <span className="muted-text">/patients page visit</span>
+          </article>
+          <article className="kpi-card">
+            <p className="eyebrow">Unique visitor</p>
+            <strong>{formatNumber(areaAnalytics.patientVisitors?.uniqueVisitors)}</strong>
+            <span className="muted-text">রক্ত খুঁজতে আসা visitor</span>
+          </article>
+        </section>
+      ) : null}
+
       <RoleSummaryPanel summaries={resolvedSummaries} />
 
       <div className="panel-grid dashboard-grid">
@@ -162,6 +194,12 @@ export const DashboardPage = () => {
           <h3>কার্যক্রম চার্ট</h3>
           <MiniBarChart data={chartSeries} />
         </article>
+        {isAdmin && areaAnalytics?.patientVisitors?.dailyVisits?.length ? (
+          <article className="panel-card">
+            <h3>রক্ত খোঁজার ভিজিট</h3>
+            <MiniBarChart data={areaAnalytics.patientVisitors.dailyVisits.map((item) => ({ label: item.date.slice(5), value: item.visits }))} />
+          </article>
+        ) : null}
       </div>
     </section>
   );
