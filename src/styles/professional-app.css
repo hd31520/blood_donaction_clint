@@ -152,6 +152,7 @@ body::after {
 .patient-create-card,
 .error-boundary-card,
 .request-dialog,
+.filter-dialog,
 .donor-dialog,
 .modal-card,
 .card,
@@ -238,7 +239,8 @@ label {
 .profile-form-grid,
 .auth-form,
 .stack-form,
-.request-dialog-grid {
+.request-dialog-grid,
+.filter-dialog-grid {
   gap: 0.6rem !important;
 }
 
@@ -252,6 +254,103 @@ label {
   border-radius: var(--app-radius) !important;
   background: var(--glass-bg, var(--bg-card));
   box-shadow: var(--app-shadow-soft);
+}
+
+.filter-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(7, 13, 13, 0.58);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.filter-dialog {
+  width: min(720px, 100%);
+  max-height: min(88vh, 760px);
+  overflow: auto;
+  border: 1px solid var(--glass-border, var(--line));
+  background: var(--glass-bg-strong, rgba(255, 253, 248, 0.96));
+  padding: var(--app-pad) !important;
+}
+
+.filter-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.filter-dialog-header h3 {
+  margin: 0.15rem 0 0;
+  font-family: 'Sora', 'Noto Sans Bengali', sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.filter-dialog-close {
+  flex: 0 0 auto;
+  width: 40px;
+  min-height: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.filter-dialog-form {
+  display: grid;
+  gap: 0.85rem;
+  padding-top: 0.85rem;
+}
+
+.filter-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.filter-dialog-grid input,
+.filter-dialog-grid select,
+.filter-dialog .location-selector select,
+.filter-dialog .location-selector input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.filter-dialog .location-selector {
+  padding: 0.75rem !important;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.filter-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding-top: 0.25rem;
+}
+
+html.dark .filter-dialog {
+  background: var(--glass-bg-strong, rgba(17, 29, 29, 0.96));
+}
+
+html.dark .filter-dialog-grid input,
+html.dark .filter-dialog-grid select,
+html.dark .filter-dialog .location-selector,
+html.dark .filter-dialog-close {
+  background: rgba(9, 15, 15, 0.76);
+  color: var(--text-primary);
+  border-color: var(--line);
 }
 
 .public-banner {
@@ -293,6 +392,7 @@ label {
 .home-hero-actions,
 .error-boundary-actions,
 .request-dialog-actions,
+.filter-dialog-actions,
 .donor-dialog-actions {
   gap: 0.45rem !important;
 }
@@ -445,7 +545,8 @@ label {
   .patient-toolbar,
   .home-filter-toolbar,
   .profile-form-grid,
-  .request-dialog-grid {
+  .request-dialog-grid,
+  .filter-dialog-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -507,22 +608,27 @@ label {
   .patient-row-actions .inline-link-btn,
   .patient-row-actions button,
   .request-dialog-actions .inline-link-btn,
-  .request-dialog-actions button {
+  .request-dialog-actions button,
+  .filter-dialog-actions .inline-link-btn,
+  .filter-dialog-actions button {
     width: 100% !important;
   }
 
-  .request-dialog-backdrop {
+  .request-dialog-backdrop,
+  .filter-dialog-backdrop {
     align-items: end !important;
     padding: 0 !important;
   }
 
-  .request-dialog {
+  .request-dialog,
+  .filter-dialog {
     width: 100% !important;
     max-height: 92vh !important;
     border-radius: 22px 22px 0 0 !important;
   }
 
-  .request-dialog-actions {
+  .request-dialog-actions,
+  .filter-dialog-actions {
     flex-direction: column-reverse !important;
   }
 
