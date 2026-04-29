@@ -66,6 +66,7 @@ export const HomePage = () => {
   const [meta, setMeta] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDonorDialogOpen, setIsDonorDialogOpen] = useState(false);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 
   const filters = useMemo(
     () => ({
@@ -151,6 +152,14 @@ export const HomePage = () => {
     setLocationResetKey((previous) => previous + 1);
   };
 
+  const closeFilterDialog = () => {
+    setIsFilterDialogOpen(false);
+  };
+
+  const clearAndKeepFilterDialog = () => {
+    clearFilters();
+  };
+
   return (
     <section className="feature-page reveal home-page-stack public-home startup-home clean-home">
       <header className="clean-home-hero">
@@ -163,6 +172,9 @@ export const HomePage = () => {
           <Link to="/patients" className="inline-link-btn startup-primary-cta">
             রক্তের অনুরোধ দিন
           </Link>
+          <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsFilterDialogOpen(true)}>
+            Filter
+          </button>
           <button type="button" className="inline-link-btn ghost-action" onClick={() => setIsDonorDialogOpen(true)}>
             ডোনার যোগ করুন
           </button>
@@ -172,52 +184,73 @@ export const HomePage = () => {
         </div>
       </header>
 
-      <section className="table-card startup-filter-card">
-        <header className="panel-card-header">
-          <div>
-            <p className="eyebrow">দ্রুত খুঁজুন</p>
-            <h3>রক্তের অনুরোধ filter করুন</h3>
-          </div>
-          <button type="button" className="inline-link-btn" onClick={clearFilters}>
-            ফিল্টার মুছুন
-          </button>
-        </header>
+      {isFilterDialogOpen ? (
+        <div className="filter-dialog-backdrop" role="presentation" onMouseDown={closeFilterDialog}>
+          <section
+            className="filter-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="homeFilterDialogTitle"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="filter-dialog-header">
+              <div>
+                <p className="eyebrow">দ্রুত খুঁজুন</p>
+                <h3 id="homeFilterDialogTitle">রক্তের অনুরোধ filter করুন</h3>
+              </div>
+              <button type="button" className="filter-dialog-close" aria-label="Close filter dialog" onClick={closeFilterDialog}>
+                ×
+              </button>
+            </div>
 
-        <div className="toolbar patient-toolbar">
-          <label htmlFor="homeBloodGroup">রক্তের গ্রুপ</label>
-          <select id="homeBloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
-            <option value="">সব গ্রুপ</option>
-            {BLOOD_GROUP_OPTIONS.map((group) => (
-              <option key={group} value={group}>
-                {group}
-              </option>
-            ))}
-          </select>
+            <div className="filter-dialog-form">
+              <div className="filter-dialog-grid">
+                <label htmlFor="homeBloodGroup">রক্তের গ্রুপ</label>
+                <select id="homeBloodGroup" value={bloodGroup} onChange={(event) => setBloodGroup(event.target.value)}>
+                  <option value="">সব গ্রুপ</option>
+                  {BLOOD_GROUP_OPTIONS.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
 
-          <label htmlFor="homeStatus">অবস্থা</label>
-          <select id="homeStatus" value={status} onChange={(event) => setStatus(event.target.value)}>
-            <option value="">সব অবস্থা</option>
-            <option value="pending">অপেক্ষমাণ</option>
-            <option value="in_progress">চলমান</option>
-            <option value="fulfilled">সম্পন্ন</option>
-          </select>
+                <label htmlFor="homeStatus">অবস্থা</label>
+                <select id="homeStatus" value={status} onChange={(event) => setStatus(event.target.value)}>
+                  <option value="">সব অবস্থা</option>
+                  <option value="pending">অপেক্ষমাণ</option>
+                  <option value="in_progress">চলমান</option>
+                  <option value="fulfilled">সম্পন্ন</option>
+                </select>
+              </div>
+
+              <LocationSelector
+                mode="filter"
+                idPrefix="publicHome"
+                resetKey={locationResetKey}
+                enableAutoDetect={false}
+                onChange={(value) => {
+                  setLocationFilters({
+                    divisionId: value.divisionId,
+                    districtId: value.districtId,
+                    upazilaId: value.upazilaId,
+                    unionId: value.unionId,
+                  });
+                }}
+              />
+
+              <div className="filter-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={clearAndKeepFilterDialog}>
+                  ফিল্টার মুছুন
+                </button>
+                <button type="button" className="inline-link-btn startup-primary-cta" onClick={closeFilterDialog}>
+                  Apply Filter
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
-
-        <LocationSelector
-          mode="filter"
-          idPrefix="publicHome"
-          resetKey={locationResetKey}
-          enableAutoDetect={false}
-          onChange={(value) => {
-            setLocationFilters({
-              divisionId: value.divisionId,
-              districtId: value.districtId,
-              upazilaId: value.upazilaId,
-              unionId: value.unionId,
-            });
-          }}
-        />
-      </section>
+      ) : null}
 
       {isLoading ? <p className="page-loader">তালিকা লোড হচ্ছে...</p> : null}
 
