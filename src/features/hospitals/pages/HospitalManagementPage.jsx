@@ -33,6 +33,7 @@ export const HospitalManagementPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [locationKey, setLocationKey] = useState(0);
+  const [isHospitalDialogOpen, setIsHospitalDialogOpen] = useState(false);
 
   const canManageHospitals = useMemo(
     () => ['super_admin', 'district_admin', 'upazila_admin'].includes(user?.role),
@@ -82,6 +83,12 @@ export const HospitalManagementPage = () => {
     setLocationKey((previous) => previous + 1);
   };
 
+  const closeHospitalDialog = () => {
+    if (!isSubmitting) {
+      setIsHospitalDialogOpen(false);
+    }
+  };
+
   const submitHospital = async (event) => {
     event.preventDefault();
 
@@ -123,6 +130,7 @@ export const HospitalManagementPage = () => {
 
       toast.success('হাসপাতাল তৈরি হয়েছে।');
       resetForm();
+      setIsHospitalDialogOpen(false);
       await loadHospitals();
     } catch (requestError) {
       toast.error(requestError?.response?.data?.message || 'হাসপাতাল তৈরি করা যায়নি।');
@@ -134,48 +142,68 @@ export const HospitalManagementPage = () => {
   return (
     <section className="feature-page reveal">
       <header className="feature-header">
-        <p className="eyebrow">হাসপাতাল ব্যবস্থাপনা</p>
-        <h2>হাসপাতাল</h2>
-        <p className="role-scope">
-          {ROLE_LABEL[user?.role] || 'অ্যাডমিন'} নিজ অনুমোদিত এলাকার হাসপাতাল পরিচালনা করতে পারবেন।
-        </p>
+        <div>
+          <p className="eyebrow">হাসপাতাল ব্যবস্থাপনা</p>
+          <h2>হাসপাতাল</h2>
+        </div>
+        {canManageHospitals ? (
+          <button type="button" className="inline-link-btn" onClick={() => setIsHospitalDialogOpen(true)}>
+            হাসপাতাল যোগ করুন
+          </button>
+        ) : null}
       </header>
 
-      <article className="panel-card role-management-section">
-        <h3>হাসপাতাল যোগ করুন</h3>
-        <form className="profile-form-grid" onSubmit={submitHospital}>
-          <div className="home-filter-field">
-            <label htmlFor="hospitalName">হাসপাতালের নাম</label>
-            <input id="hospitalName" value={form.name} onChange={handleChange('name')} />
-          </div>
+      {isHospitalDialogOpen ? (
+        <div className="app-dialog-backdrop" role="presentation" onMouseDown={closeHospitalDialog}>
+          <section className="app-dialog" role="dialog" aria-modal="true" aria-labelledby="hospitalDialogTitle" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="app-dialog-header">
+              <div>
+                <p className="eyebrow">নতুন হাসপাতাল</p>
+                <h3 id="hospitalDialogTitle">হাসপাতাল যোগ করুন</h3>
+              </div>
+              <button type="button" className="app-dialog-close" aria-label="Close hospital dialog" onClick={closeHospitalDialog} disabled={isSubmitting}>
+                ×
+              </button>
+            </div>
 
-          <div className="home-filter-field">
-            <label htmlFor="hospitalPhone">মোবাইল</label>
-            <input id="hospitalPhone" value={form.phone} onChange={handleChange('phone')} />
-          </div>
+            <form className="app-dialog-form" onSubmit={submitHospital}>
+              <div className="app-dialog-grid">
+                <div className="home-filter-field">
+                  <label htmlFor="hospitalName">হাসপাতালের নাম</label>
+                  <input id="hospitalName" value={form.name} onChange={handleChange('name')} />
+                </div>
 
-          <div className="home-filter-field profile-full-width">
-            <label htmlFor="hospitalAddress">ঠিকানা</label>
-            <input id="hospitalAddress" value={form.address} onChange={handleChange('address')} />
-          </div>
+                <div className="home-filter-field">
+                  <label htmlFor="hospitalPhone">মোবাইল</label>
+                  <input id="hospitalPhone" value={form.phone} onChange={handleChange('phone')} />
+                </div>
 
-          <div className="profile-full-width">
-            <LocationSelector
-              mode="filter"
-              idPrefix="hospitalManagement"
-              resetKey={locationKey}
-              enableAutoDetect={false}
-              onChange={handleLocationChange}
-            />
-          </div>
+                <div className="home-filter-field app-dialog-full">
+                  <label htmlFor="hospitalAddress">ঠিকানা</label>
+                  <input id="hospitalAddress" value={form.address} onChange={handleChange('address')} />
+                </div>
+              </div>
 
-          <div className="profile-full-width role-management-actions">
-            <button type="submit" className="inline-link-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'তৈরি হচ্ছে...' : 'হাসপাতাল তৈরি করুন'}
-            </button>
-          </div>
-        </form>
-      </article>
+              <LocationSelector
+                mode="filter"
+                idPrefix="hospitalManagement"
+                resetKey={locationKey}
+                enableAutoDetect={false}
+                onChange={handleLocationChange}
+              />
+
+              <div className="app-dialog-actions">
+                <button type="button" className="inline-link-btn ghost-action" onClick={closeHospitalDialog} disabled={isSubmitting}>
+                  বন্ধ করুন
+                </button>
+                <button type="submit" className="inline-link-btn" disabled={isSubmitting}>
+                  {isSubmitting ? 'তৈরি হচ্ছে...' : 'হাসপাতাল তৈরি করুন'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      ) : null}
 
       <article className="panel-card role-management-section">
         <h3>হাসপাতাল তালিকা</h3>
