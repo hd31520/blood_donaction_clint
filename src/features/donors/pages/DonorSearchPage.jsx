@@ -23,13 +23,22 @@ const formatDate = (value) => {
   });
 };
 
+const formatNumberBn = (value) => Number(value || 0).toLocaleString('bn-BD');
+
 const getEligibilityLabel = (donorProfile) => {
   if (donorProfile.isEligibleForDonation) {
-    return 'রক্তদানের জন্য উপযুক্ত';
+    return 'এখন দিতে পারবেন';
   }
 
-  const daysLeft = Number(donorProfile.daysUntilEligible || 0).toLocaleString('bn-BD');
-  return `${daysLeft} দিন পরে উপযুক্ত`;
+  return `${formatNumberBn(donorProfile.daysUntilEligible)} দিন বাকি`;
+};
+
+const getRemainingDayLabel = (donorProfile) => {
+  if (donorProfile.isEligibleForDonation) {
+    return 'প্রস্তুত';
+  }
+
+  return `${formatNumberBn(donorProfile.daysUntilEligible)} দিন`;
 };
 
 const getResolvedAvailability = (donorProfile) => {
@@ -218,7 +227,7 @@ export const DonorSearchPage = () => {
               <th>রক্তের গ্রুপ</th>
               <th>লোকেশন</th>
               <th>অবস্থা</th>
-              <th>যোগ্যতা</th>
+              <th>বাকি দিন</th>
               <th>শেষ রক্তদান</th>
               <th>পরবর্তী তারিখ</th>
               <th>যোগাযোগ</th>
@@ -251,7 +260,10 @@ export const DonorSearchPage = () => {
                       {AVAILABILITY_LABELS[resolvedAvailability] || resolvedAvailability}
                     </span>
                   </td>
-                  <td data-label="যোগ্যতা">{getEligibilityLabel(donorProfile)}</td>
+                  <td data-label="বাকি দিন">
+                    <strong>{getRemainingDayLabel(donorProfile)}</strong>
+                    <div className="muted-text">{getEligibilityLabel(donorProfile)}</div>
+                  </td>
                   <td data-label="শেষ রক্তদান">{formatDate(donorProfile.lastDonationDate)}</td>
                   <td data-label="পরবর্তী তারিখ">{formatDate(donorProfile.nextEligibleDonationDate)}</td>
                   <td data-label="যোগাযোগ">
