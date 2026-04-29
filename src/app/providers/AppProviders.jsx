@@ -1,6 +1,7 @@
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
+import { VisitTracker } from '../../components/analytics/VisitTracker.jsx';
 import { GlobalWatermark } from '../../components/global/GlobalWatermark.jsx';
 import { AuthProvider } from '../../features/auth/context/AuthContext.jsx';
 import { NotificationProvider } from '../../features/notifications/context/NotificationContext.jsx';
@@ -27,6 +28,7 @@ export const AppProviders = () => {
     >
       <AuthProvider>
         <NotificationProvider>
+          <VisitTracker />
           <AppRouter />
           <Toaster
             position="top-right"
